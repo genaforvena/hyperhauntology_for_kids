@@ -171,6 +171,11 @@ tests/          25 tests, no network
 runs/           tapes
 ```
 
+## The critical report
+
+`docs/critique.md` is the honest assessment of this whole line of work, including
+the parts that say it is probably wrong. Read it before running anything.
+
 ## Licence
 
 MIT.
