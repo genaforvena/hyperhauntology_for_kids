@@ -33,6 +33,17 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--out", default=None, help="tape path (default runs/<model>_<rule>_<ts>.jsonl)")
     r.add_argument("-v", "--verbose", action="store_true")
 
+    k = sub.add_parser("kids", help="hyperhauntology for kids: one run, narrated as it happens")
+    k.add_argument("--model", required=True)
+    k.add_argument("--provider", default="ollama", choices=["ollama", "groq", "openai"])
+    k.add_argument("--rule", default="zy")
+    k.add_argument("--seed-word", default="mozerov", dest="seed_word")
+    k.add_argument("--turns", type=int, default=6)
+    k.add_argument("--temperature", type=float, default=0.7)
+    k.add_argument("--seed", type=_seed, default=7)
+    k.add_argument("--timeout", type=float, default=120.0)
+    k.add_argument("--probe", default="provenance.sysprompt", dest="probe_key")
+
     q = sub.add_parser("replay", help="re-derive a verdict from a tape, offline")
     q.add_argument("tape")
 
@@ -46,6 +57,22 @@ def main(argv=None) -> int:
     try:
         if args.cmd == "run":
             print(run(args))
+        elif args.cmd == "kids":
+            from .kids import play
+
+            return play(
+                {
+                    "model": args.model,
+                    "provider": args.provider,
+                    "temperature": args.temperature,
+                    "seed": args.seed,
+                    "timeout": args.timeout,
+                },
+                args.rule,
+                args.seed_word,
+                args.turns,
+                args.probe_key,
+            )
         elif args.cmd == "replay":
             print(replay(args.tape))
         elif args.cmd == "probes":
