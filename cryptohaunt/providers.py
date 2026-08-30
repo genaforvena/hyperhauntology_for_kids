@@ -22,6 +22,11 @@ class Reply:
     text: str
     latency_s: float
     raw_finish: str | None
+    # Reasoning models return their chain separately. It is kept on the tape as
+    # evidence and NEVER graded as the answer: a model whose whole budget went
+    # into thinking returns an empty `text`, and scoring that as an answer turns
+    # silence into an observation.
+    thinking: str | None = None
 
 
 def _post(url: str, payload: dict, headers: dict, timeout: float) -> dict:
@@ -51,7 +56,8 @@ def _groq(messages, model, temperature, seed, timeout):
         timeout,
     )
     choice = out["choices"][0]
-    return choice["message"]["content"] or "", choice.get("finish_reason")
+    msg = choice["message"]
+    return msg["content"] or "", choice.get("finish_reason"), msg.get("reasoning_content")
 
 
 def _openai_compatible(base_env, key_env):
@@ -66,7 +72,8 @@ def _openai_compatible(base_env, key_env):
         headers = {"Authorization": f"Bearer {key}"} if key else {}
         out = _post(base.rstrip("/") + "/chat/completions", payload, headers, timeout)
         choice = out["choices"][0]
-        return choice["message"]["content"] or "", choice.get("finish_reason")
+        msg = choice["message"]
+        return msg["content"] or "", choice.get("finish_reason"), msg.get("reasoning_content")
 
     return call
 
@@ -84,7 +91,8 @@ def _ollama(messages, model, temperature, seed, timeout):
         {},
         timeout,
     )
-    return out["message"]["content"] or "", out.get("done_reason")
+    msg = out["message"]
+    return msg["content"] or "", out.get("done_reason"), msg.get("thinking")
 
 
 PROVIDERS = {
@@ -116,8 +124,13 @@ def chat(
     for attempt in range(retries + 1):
         t0 = time.time()
         try:
-            text, finish = fn(messages, model, temperature, seed, timeout)
-            return Reply(text=text, latency_s=round(time.time() - t0, 3), raw_finish=finish)
+            text, finish, thinking = fn(messages, model, temperature, seed, timeout)
+            return Reply(
+                text=text,
+                latency_s=round(time.time() - t0, 3),
+                raw_finish=finish,
+                thinking=thinking,
+            )
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode(errors="replace")[:400]
             last = ProviderError(f"HTTP {exc.code} from {provider}: {detail}")

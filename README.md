@@ -1,4 +1,8 @@
-# cryptohauntological
+# hyperhauntology for kids
+
+**Start with [GOAL.md](GOAL.md).** One page: what the tool is, what one thing it
+measures, the hypotheses written so they can lose, and how anything here is
+measured. The rest of this file is how to drive it.
 
 **Break a model's grip on a trivial rule. Then ask it about pizza. See what it
 still thinks it is being told to do.**
@@ -116,7 +120,12 @@ The verdicts:
 
 - `CARRIED` — above **both** controls. The instruction did work.
 - `TOKEN-STATISTICS` — above the clean control only. The context did the work.
-- `NO-DIFFERENCE` — the arms cannot be separated by this run. Usually true.
+- `NULL` — no difference, **and** the design would have caught one of the stated
+  size 80% of the time. This is a result.
+- `INCONCLUSIVE` — no difference, and the design could not have seen one anyway.
+  This is not a result, and the tool says how many repetitions would make it one.
+- `MUTE` — over half the derail turns came back empty. A silence, not a
+  derailment.
 - `REVERSED` — treatment *below* clean control.
 - `NOT-ESTABLISHED` — **the model never once applied the rule.** No coordination
   existed, so nothing was broken, so the whole run says nothing. This is not a
@@ -178,4 +187,5 @@ the parts that say it is probably wrong. Read it before running anything.
 
 ## Licence
 
-MIT.
+CC0 1.0 — public domain. Take it, fork it, publish the null, no attribution
+required.

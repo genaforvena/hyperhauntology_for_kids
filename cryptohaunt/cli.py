@@ -31,6 +31,13 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--timeout", type=float, default=120.0)
     r.add_argument("--probes", default=None, help="JSON file of probes; omit for the shipped set")
     r.add_argument("--out", default=None, help="tape path (default runs/<model>_<rule>_<ts>.jsonl)")
+    r.add_argument(
+        "--max-mde",
+        type=float,
+        default=0.30,
+        dest="max_mde",
+        help="largest effect a NULL is allowed to claim it ruled out (default 0.30)",
+    )
     r.add_argument("-v", "--verbose", action="store_true")
 
     k = sub.add_parser("kids", help="hyperhauntology for kids: one run, narrated as it happens")

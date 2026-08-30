@@ -34,10 +34,22 @@ class Call:
     answer: str | None
     error: str | None
     latency_s: float | None
+    thinking: str | None = None
 
     @property
     def ok(self) -> bool:
         return self.answer is not None
+
+    @property
+    def mute(self) -> bool:
+        """The call succeeded and the model said nothing.
+
+        Distinct from a failed call and, more importantly, distinct from a wrong
+        answer. A reasoning model that spends its whole budget thinking returns
+        an empty string, and scoring that as "did not apply the rule" invents a
+        derailment out of a silence.
+        """
+        return self.answer is not None and not self.answer.strip()
 
 
 @dataclass
@@ -45,8 +57,16 @@ class DerailState:
     messages: list[dict]
     turns_run: int
     first_break_turn: int | None
-    obeyed: list[bool]
+    # True = applied the rule, False = applied something else, None = said
+    # nothing at all. The third case is not a break and must never be counted
+    # as one.
+    obeyed: list[bool | None]
     calls: list[Call] = field(default_factory=list)
+
+    @property
+    def spoken(self) -> list[bool]:
+        """The turns that produced an answer we could compare at all."""
+        return [o for o in self.obeyed if o is not None]
 
     @property
     def established(self) -> bool:
@@ -56,19 +76,28 @@ class DerailState:
         one that was derailed, and the original probe folds both into its
         "Initial Task: Fail" column. You cannot break what never formed.
         """
-        return any(self.obeyed)
+        return any(o is True for o in self.obeyed)
 
     @property
     def derailed(self) -> bool:
-        """Established first, then lost, and not recovered by the last turn."""
-        if not self.established:
+        """Established first, then lost, and not recovered by the last SPOKEN turn."""
+        if not self.established or self.first_break_turn is None:
             return False
-        return self.first_break_turn is not None and not (self.obeyed[-1:] or [False])[0]
+        spoken = self.spoken
+        return bool(spoken) and spoken[-1] is False
+
+    @property
+    def mute_turns(self) -> int:
+        return sum(1 for c in self.calls if c.mute)
 
     @property
     def status(self) -> str:
         if not self.calls or not any(c.ok for c in self.calls):
             return "no-calls"
+        if self.mute_turns * 2 > len(self.calls):
+            # More than half the turns were empty. Whatever this conversation is,
+            # it is not a derailment we watched happen.
+            return "mute"
         if not self.established:
             return "not-established"
         return "derailed" if self.derailed else "recovered"
@@ -90,7 +119,7 @@ def _ask(messages, cfg, phase, label, question) -> Call:
             seed=cfg["seed"],
             timeout=cfg["timeout"],
         )
-        return Call(phase, label, question, reply.text, None, reply.latency_s)
+        return Call(phase, label, question, reply.text, None, reply.latency_s, reply.thinking)
     except ProviderError as exc:
         return Call(phase, label, question, None, str(exc), round(time.time() - t0, 3))
 
@@ -117,8 +146,15 @@ def derail(cfg: dict, rule: Rule, seed_word: str, turns: int) -> DerailState:
         state.calls.append(call)
         if not call.ok:
             break
-        answer = call.answer.strip().split()[0] if call.answer.strip() else ""
         messages.append({"role": "assistant", "content": call.answer})
+        if call.mute:
+            # Said nothing. Not a break, not a compliance - no observation.
+            state.obeyed.append(None)
+            state.turns_run = turn
+            if turn < turns:
+                messages.append({"role": "user", "content": f"{PRAISE} {FOLLOW_UP}"})
+            continue
+        answer = call.answer.strip().split()[0]
         expected = rule.apply(previous)
         followed = answer.strip(".,!?\"'").lower() == expected.lower()
         state.obeyed.append(followed)

@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from . import __version__
 from .probe import control, derail, noise, switch
 from .probes import Probe, load_probes
-from .report import Arm, collect, render, verdict_for
+from .report import DEFAULT_MDE, Arm, collect, render, verdict_for
 from .rules import RULES
 
 
@@ -87,7 +87,8 @@ def run(args) -> str:
             statuses.append(state.status)
             derail_notes.append(
                 f"rep{rep}: {state.status}, broke at turn {state.first_break_turn or '-'}, "
-                f"obeyed {sum(state.obeyed)}/{len(state.obeyed)}, calls {state.coverage}"
+                f"obeyed {sum(1 for o in state.obeyed if o)}/{len(state.spoken)} spoken, "
+                f"{state.mute_turns} mute, calls {state.coverage}"
             )
             tape.write(
                 json.dumps(
@@ -143,6 +144,7 @@ def run(args) -> str:
             "temperature": args.temperature,
             "seed": args.seed,
         },
+        max_mde=getattr(args, "max_mde", DEFAULT_MDE),
     )
     return f"{text}\n\ntape: {out_path}"
 
@@ -157,16 +159,19 @@ def _overall_status(statuses: list[str]) -> str:
         return "no-calls"
     if "derailed" in statuses:
         return "derailed"
-    for word in ("recovered", "not-established", "no-calls"):
+    for word in ("recovered", "not-established", "mute", "no-calls"):
         if word in statuses:
             return word
     return "no-calls"
 
 
-def summarise(arms: dict, families, status, header) -> str:
+def summarise(arms: dict, families, status, header, max_mde: float = DEFAULT_MDE) -> str:
     folded = {name: collect(items, families) for name, items in arms.items()}
     empty = Arm(0, 0, 0.0)
     order = list(dict.fromkeys(families.values()))
+    per_family: dict[str, int] = {}
+    for fam in families.values():
+        per_family[fam] = per_family.get(fam, 0) + 1
     verdicts = [
         verdict_for(
             f,
@@ -174,6 +179,8 @@ def summarise(arms: dict, families, status, header) -> str:
             folded["control"].get(f, empty),
             folded["noise"].get(f, empty),
             status,
+            max_mde=max_mde,
+            probes_per_family=per_family.get(f, 0),
         )
         for f in order
     ]

@@ -111,10 +111,11 @@ class TestStatistics(unittest.TestCase):
         honest = verdict_for("neutral", Arm(2, 6, 2.0), CLEAN6, CLEAN6)
         folded = verdict_for("neutral", Arm(6, 6, 2.0), CLEAN6, CLEAN6)
         # Honest: 2 of 6 answers were gradable, so the arm is BLIND.
-        # Folded: the same run reads as a full arm that simply saw little.
-        # "could not see" becomes "saw nothing", and only one of those is news.
+        # Folded: the same run reads as a full arm that merely saw little.
+        # Both are refusals here, but they are refusals for different reasons,
+        # and only the honest one points at the grader instead of the sample size.
         self.assertEqual(honest.verdict, "BLIND")
-        self.assertEqual(folded.verdict, "NO-DIFFERENCE")
+        self.assertEqual(folded.verdict, "INCONCLUSIVE")
 
 
 class TestRuleLeakFinding(unittest.TestCase):
@@ -190,3 +191,77 @@ class TestTapeDurability(unittest.TestCase):
 
         src = inspect.getsource(runner.run)
         self.assertIn("buffering=1", src)
+
+
+class TestPower(unittest.TestCase):
+    """A null is a claim about what the design COULD have seen."""
+
+    def test_a_tiny_run_that_finds_nothing_is_not_a_null(self):
+        from cryptohaunt.report import verdict_for
+
+        v = verdict_for("neutral", Arm(12, 12, 0.0), Arm(12, 12, 0.0), Arm(12, 12, 0.0),
+                        probes_per_family=2)
+        self.assertEqual(v.verdict, "INCONCLUSIVE")
+        self.assertIn("repetitions would reach", v.note)
+
+    def test_a_big_run_that_finds_nothing_is_a_null_and_names_its_reach(self):
+        from cryptohaunt.report import verdict_for
+
+        v = verdict_for("neutral", Arm(60, 60, 0.0), Arm(60, 60, 0.0), Arm(60, 60, 0.0),
+                        probes_per_family=2)
+        self.assertEqual(v.verdict, "NULL")
+        self.assertLessEqual(v.mde, 0.30)
+
+    def test_the_detectable_effect_shrinks_as_arms_grow(self):
+        from cryptohaunt.report import minimum_detectable_effect
+
+        small = minimum_detectable_effect(12, 12, 0.0)
+        large = minimum_detectable_effect(60, 60, 0.0)
+        self.assertGreater(small, large)
+
+    def test_power_is_reproducible(self):
+        from cryptohaunt.report import power_at
+
+        self.assertEqual(power_at(20, 20, 0.1, 0.4), power_at(20, 20, 0.1, 0.4))
+
+
+class TestMuteTurns(unittest.TestCase):
+    """A model that says nothing has not broken the rule.
+
+    Found live: qwen3.5:4b is a reasoning model, ollama returns its chain in a
+    separate `thinking` field, and six of eight derail turns came back with an
+    empty `content`. Scored as rule-breaks, they manufactured a `derailed`
+    status - and the whole switch phase then rests on it.
+    """
+
+    def _state(self, obeyed, mutes):
+        from cryptohaunt.probe import Call, DerailState
+
+        calls = [
+            Call("derail", f"t{i}", "q", "" if m else "word", None, 0.1)
+            for i, m in enumerate(mutes)
+        ]
+        first_break = next((i + 1 for i, o in enumerate(obeyed) if o is False), None)
+        return DerailState([], len(obeyed), first_break, obeyed, calls)
+
+    def test_mostly_empty_turns_are_mute_not_derailed(self):
+        st = self._state([True, True, None, None, None, None], [0, 0, 1, 1, 1, 1])
+        self.assertEqual(st.status, "mute")
+        self.assertFalse(st.derailed)
+
+    def test_a_real_break_after_a_real_hold_is_still_derailed(self):
+        st = self._state([True, True, False, False], [0, 0, 0, 0])
+        self.assertEqual(st.status, "derailed")
+
+    def test_a_silence_does_not_count_as_the_last_word(self):
+        # Broke, then went quiet. The last thing it actually SAID was a break.
+        st = self._state([True, False, None], [0, 0, 1])
+        self.assertEqual(st.spoken[-1], False)
+        self.assertTrue(st.derailed)
+
+    def test_the_mute_call_is_told_apart_from_a_failed_one(self):
+        from cryptohaunt.probe import Call
+
+        self.assertTrue(Call("d", "l", "q", "   ", None, 0.1).mute)
+        self.assertFalse(Call("d", "l", "q", None, "HTTP 500", 0.1).mute)
+        self.assertFalse(Call("d", "l", "q", "word", None, 0.1).mute)

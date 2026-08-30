@@ -9,6 +9,7 @@ Two rules hold everywhere below:
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass
 
 Z = 1.959963984540054  # 95%
@@ -69,14 +70,73 @@ class FamilyVerdict:
     delta_noise: float | None
     ci_noise: tuple[float, float] | None
     note: str
+    mde: float | None = None
 
 
 MIN_GRADED = 3
 MIN_COVERAGE = 0.5
+TARGET_POWER = 0.80
+DEFAULT_MDE = 0.30  # a null is only reportable down to this effect size
+
+
+def power_at(n1: int, n2: int, p_control: float, delta: float, trials: int = 1500) -> float:
+    """Fraction of simulated runs in which this design's OWN test finds `delta`.
+
+    Simulated rather than derived from a normal approximation, because the test
+    actually applied downstream is Newcombe's, the arms here are small, and the
+    approximation is worst exactly where we live. Seeded, so the number a report
+    prints is the number anyone re-running it gets.
+    """
+    if n1 == 0 or n2 == 0:
+        return 0.0
+    p_treat = min(1.0, p_control + delta)
+    rng = random.Random(20260830)
+    wins = 0
+    for _ in range(trials):
+        s1 = sum(rng.random() < p_treat for _ in range(n1))
+        s2 = sum(rng.random() < p_control for _ in range(n2))
+        if newcombe(s1, n1, s2, n2)[0] > 0:
+            wins += 1
+    return wins / trials
+
+
+def minimum_detectable_effect(n1: int, n2: int, p_control: float) -> float | None:
+    """Smallest delta this design would catch `TARGET_POWER` of the time.
+
+    Returns None when even a delta of 1.0 is out of reach - which is the honest
+    answer for the tiny arms this kind of probe usually produces, and is exactly
+    the case that must never be reported as "no effect".
+    """
+    lo, hi = 0.0, 1.0
+    if power_at(n1, n2, p_control, hi) < TARGET_POWER:
+        return None
+    for _ in range(12):
+        mid = (lo + hi) / 2
+        if power_at(n1, n2, p_control, mid) >= TARGET_POWER:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+def reps_needed(probes_per_family: int, p_control: float, target: float) -> int | None:
+    """How many repetitions would make `target` detectable. None if over 200."""
+    for reps in range(1, 201):
+        n = probes_per_family * reps
+        mde = minimum_detectable_effect(n, n, p_control)
+        if mde is not None and mde <= target:
+            return reps
+    return None
 
 
 def verdict_for(
-    family: str, treatment: Arm, control: Arm, noise: Arm, status: str = "derailed"
+    family: str,
+    treatment: Arm,
+    control: Arm,
+    noise: Arm,
+    status: str = "derailed",
+    max_mde: float = DEFAULT_MDE,
+    probes_per_family: int = 0,
 ) -> FamilyVerdict:
     """Treatment must clear BOTH controls, and each control answers its own question.
 
@@ -89,8 +149,8 @@ def verdict_for(
     work, the instruction did not.
     """
 
-    def out(v, note, dc=None, cc=None, dn=None, cn=None):
-        return FamilyVerdict(family, treatment, control, noise, v, dc, cc, dn, cn, note)
+    def out(v, note, dc=None, cc=None, dn=None, cn=None, mde=None):
+        return FamilyVerdict(family, treatment, control, noise, v, dc, cc, dn, cn, note, mde)
 
     if status == "not-established":
         return out(
@@ -101,6 +161,11 @@ def verdict_for(
         return out("RECOVERED", "the model was holding the rule at the last turn: not derailed")
     if status == "no-calls":
         return out("NO-CALLS", "the derail phase produced no answers at all")
+    if status == "mute":
+        return out(
+            "MUTE",
+            "over half the derail turns came back empty - a silence, not a derailment",
+        )
 
     for name, arm in (("treatment", treatment), ("control", control), ("noise", noise)):
         if arm.attempted == 0:
@@ -125,7 +190,29 @@ def verdict_for(
         )
     if cc[1] < 0:
         return out("REVERSED", "treatment BELOW clean control, interval clears zero", dc, cc, dn, cn)
-    return out("NO-DIFFERENCE", "interval spans zero: this run cannot separate the arms", dc, cc, dn, cn)
+
+    # Nothing was found. Two very different reasons for that, and only one of
+    # them is a result: a design that could not have seen the effect has not
+    # measured its absence. The tool refuses to call the second one a null.
+    worst = min(treatment.graded, control.graded, noise.graded)
+    mde = minimum_detectable_effect(worst, worst, control.rate)
+    if mde is None or mde > max_mde:
+        need = reps_needed(probes_per_family, control.rate, max_mde) if probes_per_family else None
+        target = f"{max_mde:.0%}"
+        found = "nothing at all" if mde is None else f"only effects above {mde:.0%}"
+        hint = f"; {need} repetitions would reach {target}" if need else ""
+        return out(
+            "INCONCLUSIVE",
+            f"arms of {worst} could detect {found}, short of the {target} this null "
+            f"claims to rule out{hint}",
+            dc, cc, dn, cn, mde,
+        )
+    return out(
+        "NULL",
+        f"no difference, and this design would have caught one of {mde:.0%} or more "
+        f"{TARGET_POWER:.0%} of the time",
+        dc, cc, dn, cn, mde,
+    )
 
 
 def collect(findings_by_arm: dict[str, list], families: dict[str, str]) -> dict[str, Arm]:
@@ -149,7 +236,7 @@ def render(verdicts: list[FamilyVerdict], header: dict) -> str:
         f"repetition: {header['reps']}  temperature: {header['temperature']}  seed: {header['seed']}",
         "",
         f"{'family':<12} {'treatment':>14} {'control':>14} {'noise':>14}"
-        f" {'vs ctrl':>19} {'vs noise':>19}  verdict",
+        f" {'vs ctrl':>19} {'vs noise':>19} {'MDE':>6}  verdict",
     ]
 
     def cell(a):
@@ -161,10 +248,11 @@ def render(verdicts: list[FamilyVerdict], header: dict) -> str:
         return f"{d:+.2f} [{ci[0]:+.2f},{ci[1]:+.2f}]"
 
     for v in verdicts:
+        mde = f"{v.mde:.0%}" if v.mde is not None else "-"
         lines.append(
             f"{v.family:<12} {cell(v.treatment):>14} {cell(v.control):>14} {cell(v.noise):>14}"
             f" {comp(v.delta_control, v.ci_control):>19} {comp(v.delta_noise, v.ci_noise):>19}"
-            f"  {v.verdict}"
+            f" {mde:>6}  {v.verdict}"
         )
     lines.append("")
     for v in verdicts:

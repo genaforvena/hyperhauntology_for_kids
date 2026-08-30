@@ -3,12 +3,12 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cryptohauntological"
+name = "hyperhauntology-for-kids"
 version = "0.1.0"
 description = "Does a model that lost the rule keep obeying it somewhere else?"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = { text = "CC0-1.0" }
 dependencies = []
 
 [project.scripts]
