@@ -177,3 +177,16 @@ class TestDeclinedRegressions(unittest.TestCase):
         ):
             with self.subTest(text=text[:40]):
                 self.assertEqual(declined(text).value, 1.0)
+
+
+class TestTapeDurability(unittest.TestCase):
+    def test_the_tape_is_line_buffered(self):
+        # A 40-minute run killed by a timeout must keep the calls it already
+        # paid for. The default buffer discards them, and a long run is exactly
+        # the one most likely to be killed.
+        import inspect
+
+        from cryptohaunt import runner
+
+        src = inspect.getsource(runner.run)
+        self.assertIn("buffering=1", src)

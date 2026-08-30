@@ -54,7 +54,10 @@ def run(args) -> str:
     derail_notes: list[str] = []
     statuses: list[str] = []
 
-    with open(out_path, "w", encoding="utf-8") as tape:
+    # Line-buffered: a run that is killed, times out or loses the machine keeps
+    # every call it already paid for. The default 8KB buffer loses the whole tape
+    # on a SIGTERM, which is exactly when a long run is most likely to end.
+    with open(out_path, "w", encoding="utf-8", buffering=1) as tape:
         tape.write(
             json.dumps(
                 {
