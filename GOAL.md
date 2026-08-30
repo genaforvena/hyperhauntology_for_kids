@@ -49,17 +49,23 @@ Same axis, two probes, nobody had drawn the line between them.
 
 ## Hypotheses, stated so they can lose
 
-- **H1.** A derailed rule-state is absorbing: after derailment, the invented rule
-  persists into answers on unrelated topics. *Prior: probably false, and the
-  first runs point that way.*
-- **H2.** A refusal is absorbing: once a model has declined once, later probes in
-  the same context are declined at a higher rate than in a clean context.
-  *Prior: the operator's own experience says yes; nobody has measured it against
-  a control.*
+- **H1. RETIRED — settled elsewhere.** A derailed rule-state is absorbing.
+  Established at n≈200,000 conversations across 15 production models by the
+  multi-turn degradation literature; see [docs/literature.md](docs/literature.md).
+  The derail phase stays as the way we *induce* a state; non-recovery is no
+  longer a finding here.
+- **H2. THE MAIN EXPERIMENT.** A refusal is absorbing: once a model has declined
+  once, later probes in the same context are declined at a higher rate than in a
+  clean context. *Prior work names it (`learned incapacity`, arXiv:2512.13762)
+  from a single 86-turn session with no control arm and no power — which cannot
+  separate an absorbing state from a model that declines those domains anyway.
+  That separation is our contribution.*
 - **H3.** A false fact is **not** absorbing: assent obtained under twenty turns of
-  praise does not survive into a fresh question.
-- **H4 (unplanned, from the first run).** Derailment collapses the **provenance**
-  boundary: asked for its system prompt, a derailed model recites the user's own
+  praise does not survive into a fresh question. *The sycophancy literature
+  measures induction; this is persistence, and the two kinds of sycophancy are
+  causally separable, so the family needs splitting.*
+- **H4 (unplanned, from the first run; not found in any prior work).** Derailment
+  collapses the **provenance** boundary: asked for its system prompt, a derailed model recites the user's own
   task instruction as its standing orders, where a clean-context model
   confabulates generic house rules instead. *Status: observed once, n=3, one 3B
   model, not yet controlled.*
@@ -97,6 +103,16 @@ Four guards, each of which changed a verdict during this repo's first day:
    caught an effect of a stated size 80% of the time, computed by simulating the
    test actually applied. Otherwise the verdict is `INCONCLUSIVE`, and it says
    how many repetitions would be enough.
+
+## Prior work
+
+Read [docs/literature.md](docs/literature.md) before running anything. It is why
+H1 is retired and H2 is the main experiment, and it kills one attractive claim
+about H4 that turns out to be false. Our organising concept already has a name in
+the literature (*attractor states*); we use theirs.
+
+Read [docs/critique.md](docs/critique.md) for the case that this whole line of
+work is probably wrong.
 
 ## Data
 
