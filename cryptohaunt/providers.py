@@ -9,8 +9,11 @@ import json
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+
+from . import __version__
 
 
 class ProviderError(RuntimeError):
@@ -33,11 +36,22 @@ def _post(url: str, payload: dict, headers: dict, timeout: float) -> dict:
     body = json.dumps(payload).encode()
     req = urllib.request.Request(url, data=body, method="POST")
     req.add_header("Content-Type", "application/json")
+    # urllib's default UA is "Python-urllib/3.x", which Cloudflare in front of at
+    # least one provider rejects with a 403 (error 1010) while the identical
+    # request from curl returns 200. A provider outage and a blocked user agent
+    # are not the same fault and must not look alike.
+    req.add_header("User-Agent", f"hyperhauntology-for-kids/{__version__} (+python-urllib)")
     for k, v in headers.items():
         req.add_header(k, v)
-    # Never route a localhost provider through a proxy: this machine exports
-    # HTTP(S)_PROXY globally and urllib would honour it for 127.0.0.1 too.
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    # Bypass any configured proxy for LOCAL endpoints only. A machine that
+    # exports HTTP(S)_PROXY globally would otherwise send 127.0.0.1 through it;
+    # disabling the proxy for every host instead would break a remote API that
+    # legitimately needs one.
+    host = urllib.parse.urlsplit(url).hostname or ""
+    if host in ("127.0.0.1", "localhost", "::1"):
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    else:
+        opener = urllib.request.build_opener()
     with opener.open(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode())
 
@@ -136,6 +150,19 @@ def chat(
             last = ProviderError(f"HTTP {exc.code} from {provider}: {detail}")
             if exc.code in (400, 401, 403, 404):
                 break  # not transient; retrying just burns quota
+            if exc.code == 429:
+                # Honour the server's own number. Guessing a backoff against a
+                # rate limiter turns a delay into a truncated experiment: the
+                # first live groq run lost six derail turns to 429 and scored
+                # two-turn conversations as derailments.
+                wait = exc.headers.get("retry-after") if exc.headers else None
+                try:
+                    delay = min(float(wait), 60.0)
+                except (TypeError, ValueError):
+                    delay = 5.0 * (attempt + 1)
+                if attempt < retries:
+                    time.sleep(delay)
+                    continue
         except Exception as exc:  # noqa: BLE001 - surfaced verbatim below
             last = ProviderError(f"{type(exc).__name__}: {exc}")
         if attempt < retries:

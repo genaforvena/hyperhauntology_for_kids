@@ -91,9 +91,18 @@ class DerailState:
         return sum(1 for c in self.calls if c.mute)
 
     @property
+    def truncated(self) -> bool:
+        """The derail loop was cut short by a failed call, not by finishing."""
+        return bool(self.calls) and not self.calls[-1].ok
+
+    @property
     def status(self) -> str:
         if not self.calls or not any(c.ok for c in self.calls):
             return "no-calls"
+        if self.truncated:
+            # A conversation the provider ended is not a conversation we ran.
+            # Scoring it would let a rate limit decide how long a derailment is.
+            return "truncated"
         if self.mute_turns * 2 > len(self.calls):
             # More than half the turns were empty. Whatever this conversation is,
             # it is not a derailment we watched happen.

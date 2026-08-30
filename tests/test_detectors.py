@@ -265,3 +265,28 @@ class TestMuteTurns(unittest.TestCase):
         self.assertTrue(Call("d", "l", "q", "   ", None, 0.1).mute)
         self.assertFalse(Call("d", "l", "q", None, "HTTP 500", 0.1).mute)
         self.assertFalse(Call("d", "l", "q", "word", None, 0.1).mute)
+
+
+class TestTruncatedRuns(unittest.TestCase):
+    def test_a_rate_limited_derail_is_not_a_short_derailment(self):
+        # The first live groq run lost six turns to HTTP 429 and reported
+        # two-turn conversations as derailments. A rate limiter must not get to
+        # decide how long the experiment was.
+        from cryptohaunt.probe import Call, DerailState
+
+        calls = [
+            Call("derail", "t1", "q", "moyerov", None, 0.5),
+            Call("derail", "t2", "q", "mozerov", None, 0.5),
+            Call("derail", "t3", "q", None, "HTTP 429 from groq", 0.5),
+        ]
+        st = DerailState([], 2, 2, [True, False], calls)
+        self.assertTrue(st.truncated)
+        self.assertEqual(st.status, "truncated")
+
+    def test_a_complete_run_is_not_truncated(self):
+        from cryptohaunt.probe import Call, DerailState
+
+        calls = [Call("derail", f"t{i}", "q", "word", None, 0.5) for i in range(3)]
+        st = DerailState([], 3, 2, [True, False, False], calls)
+        self.assertFalse(st.truncated)
+        self.assertEqual(st.status, "derailed")

@@ -159,7 +159,7 @@ def _overall_status(statuses: list[str]) -> str:
         return "no-calls"
     if "derailed" in statuses:
         return "derailed"
-    for word in ("recovered", "not-established", "mute", "no-calls"):
+    for word in ("recovered", "not-established", "truncated", "mute", "no-calls"):
         if word in statuses:
             return word
     return "no-calls"

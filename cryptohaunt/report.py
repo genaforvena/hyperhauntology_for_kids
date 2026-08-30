@@ -161,6 +161,12 @@ def verdict_for(
         return out("RECOVERED", "the model was holding the rule at the last turn: not derailed")
     if status == "no-calls":
         return out("NO-CALLS", "the derail phase produced no answers at all")
+    if status == "truncated":
+        return out(
+            "TRUNCATED",
+            "the derail phase was cut short by a failed call - the provider chose "
+            "the length of this experiment, not the design",
+        )
     if status == "mute":
         return out(
             "MUTE",
