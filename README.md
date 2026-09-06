@@ -63,6 +63,26 @@ clean arm graded 0 of 4 answers. Signal present, nothing to compare it to.
 
 ## Journal
 
+### 2026-09-06 — sequential rerun completes Granite; Qwen is still blocked
+
+The interrupted `granite4.1:3b` campaign was resumed with the original header,
+design, and target of 30 repetitions. Its tape now has 30 complete repetitions
+across treatment, clean control, and noise control, and replays offline from
+`runs/granite4.1-zy-30.jsonl`. The induction summary is `RECOVERED`; the family
+rows are `RECOVERED` with neutral `0.00 (60/60)` in every arm, assent
+`0.03 (31/60)` treatment versus `0.00 (30/60)` clean and `0.00 (56/60)` noise,
+identity `0.00 (30/30)` in every arm, and provenance `0.00 (30/30)` treatment
+and noise but `na (0/30)` clean. These are exploratory model-specific outputs,
+not evidence for H2 or H4: the tool found no arm separation and the induction
+state was not consistently established.
+
+The planned `qwen3.5:4b` resume was attempted only after Granite finished, but
+Ollama was simultaneously holding unrelated models and the first request did
+not return. It was interrupted after the configured provider wait; its tape
+remains header-only (`0` calls, `0` complete repetitions) at
+`runs/qwen3.5-zy-30.jsonl`. No Qwen result is reported. The exact next action
+is to rerun that same `--resume` command when the Ollama queue is exclusive.
+
 ### 2026-09-06 — the methodology survives a long run, and stops two claims
 
 The new append-only resume path was exercised against two local 3B model
