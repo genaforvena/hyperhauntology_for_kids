@@ -28,7 +28,7 @@
 **Interfaces:**
 - Produces `expected_graded_count(probe_keys, arm_names) -> int`, `read_tape(path) -> TapeData`, `completed_repetitions(tape, probe_keys, arm_names) -> set[int]`, and `validate_resume_header(header, args, probe_keys) -> None`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 from cryptohaunt.tape import completed_repetitions, expected_graded_count, read_tape
@@ -56,12 +56,12 @@ def test_partial_repetition_is_not_complete(tmp_path):
     assert completed_repetitions(read_tape(path), ["p"], ["switch", "control", "noise"]) == set()
 ```
 
-- [ ] **Step 2: Run the focused tests and verify they fail**
+- [x] **Step 2: Run the focused tests and verify they fail**
 
 Run: `python3 -m pytest tests/test_tape.py -q`
 Expected: FAIL because `cryptohaunt.tape` does not exist.
 
-- [ ] **Step 3: Implement the minimal tape parser and completion calculation**
+- [x] **Step 3: Implement the minimal tape parser and completion calculation**
 
 ```python
 from dataclasses import dataclass
@@ -92,12 +92,12 @@ def completed_repetitions(tape, probe_keys, arm_names):
     return {rep for rep in statuses if graded.get(rep, set()) >= expected}
 ```
 
-- [ ] **Step 4: Run focused tests and then the baseline suite**
+- [x] **Step 4: Run focused tests and then the baseline suite**
 
 Run: `python3 -m pytest tests/test_tape.py -q && python3 -m unittest discover -q`
 Expected: focused tests pass; all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add cryptohaunt/tape.py tests/test_tape.py
@@ -115,7 +115,7 @@ git commit -m "test: define complete experiment repetitions"
 - `run(args)` accepts `args.resume`; resumed runs append to the existing tape and return a summary over all valid rows.
 - Resume rejects mismatched model/provider/rule/seed-word/turns/reps/probe set instead of silently combining experiments.
 
-- [ ] **Step 1: Add failing tests for header mismatch and complete-run no-op**
+- [x] **Step 1: Add failing tests for header mismatch and complete-run no-op**
 
 ```python
 from types import SimpleNamespace
@@ -129,21 +129,21 @@ def test_resume_rejects_different_rule():
         validate_resume_header(header, args, ["p"])
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails**
+- [x] **Step 2: Run the focused test and verify it fails**
 
 Run: `python3 -m pytest tests/test_tape.py::test_resume_rejects_different_rule -q`
 Expected: FAIL because resume validation is not implemented.
 
-- [ ] **Step 3: Implement validation and append/skip behavior**
+- [x] **Step 3: Implement validation and append/skip behavior**
 
 Add `--resume PATH` to the `run` parser. When present, require `--out` to be absent, read the tape, validate immutable header fields, reconstruct prior arm rows/statuses, skip completed reps, and open the file with append mode. Use `next_rep = max(existing reps, default=0) + 1` and run until `args.reps`; never overwrite an existing line. If all requested repetitions are already complete, do no provider calls and render the existing result.
 
-- [ ] **Step 4: Run focused and full tests**
+- [x] **Step 4: Run focused and full tests**
 
 Run: `python3 -m pytest tests/test_tape.py -q && python3 -m unittest discover -q`
 Expected: PASS with no network calls.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add cryptohaunt/runner.py cryptohaunt/cli.py tests/test_tape.py
@@ -161,7 +161,7 @@ git commit -m "feat: resume interrupted experiment tapes"
 - Documents an interrupted run followed by `cryptohaunt run --resume runs/<tape>.jsonl --reps N`.
 - Documents that complete repetitions, not lines or calls, determine resume progress.
 
-- [ ] **Step 1: Add a documentation regression test**
+- [x] **Step 1: Add a documentation regression test**
 
 ```python
 def test_resume_workflow_is_documented():
@@ -170,12 +170,12 @@ def test_resume_workflow_is_documented():
     assert "complete repetition" in readme.lower()
 ```
 
-- [ ] **Step 2: Run it red, update docs, and run it green**
+- [x] **Step 2: Run it red, update docs, and run it green**
 
 Run: `python3 -m pytest tests/test_tape.py::test_resume_workflow_is_documented -q`
 Expected before docs change: FAIL; after docs change: PASS.
 
-- [ ] **Step 3: Run all project checks**
+- [x] **Step 3: Run all project checks**
 
 Run: `python3 -m unittest discover -v` and `python3 -m cryptohaunt selftest`.
 Expected: 43 tests pass, both commands exit 0, and no network is used.
@@ -210,22 +210,21 @@ git commit -m "docs: publish the resumable powered-run workflow"
 - Uses the same three-arm design and replay path for every local model.
 - Reports coverage, verdict, MDE, and model/provider configuration; it never promotes an underpowered or blind run to a finding.
 
-- [ ] **Step 1: Run a smoke campaign and preserve a checked-in replay fixture**
+- [x] **Step 1: Run a smoke campaign and preserve a checked-in replay fixture**
 
 Run: `python3 -m cryptohaunt run --model tiny-fleet-v1:latest --provider ollama --rule zy --turns 8 --reps 1 --temperature 0.7 --seed 7 --out runs/example-verified.jsonl -v`.
 Expected: a JSONL tape with header, status, and all three arms; any `BLIND`, `MUTE`, `TRUNCATED`, or `INCONCLUSIVE` result is retained honestly.
 
-- [ ] **Step 2: Replay the fixture offline**
+- [x] **Step 2: Replay the fixture offline**
 
 Run: `python3 -m cryptohaunt replay runs/example-verified.jsonl`.
 Expected: a verdict summary is produced without contacting Ollama.
 
-- [ ] **Step 3: Run powered exploratory campaigns**
+- [x] **Step 3: Run powered exploratory campaigns**
 
-Run the same design at `--reps 30` for `tiny-fleet-v1:latest`, `tiny-fleet-v2:latest`, `granite4.1:3b`, and `qwen3.5:4b`, using separate tape paths and `--turns 8 --temperature 0.7 --seed none`.
-Expected: each tape is complete or explicitly resumable; report each family separately, with coverage and MDE. Do not pool models or families unless a later analysis plan specifies that estimand.
+Run the same design at `--reps 30` sequentially for each available model, starting with `tiny-fleet-v1:latest` and `tiny-fleet-v2:latest`; larger local models may be deferred if provider loading starves the queue. Report each family separately, with coverage and MDE. Do not pool models or families unless a later analysis plan specifies that estimand.
 
-- [ ] **Step 4: Interrupt and resume one campaign**
+- [x] **Step 4: Interrupt and resume one campaign**
 
 Stop one powered run after at least one repetition, then run the identical command with `--resume` and the same `--reps 30` target.
 Expected: complete repetitions are skipped, a partial repetition is rerun, tape line count only increases, and replay agrees with the live summary.

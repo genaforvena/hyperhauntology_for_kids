@@ -63,6 +63,27 @@ clean arm graded 0 of 4 answers. Signal present, nothing to compare it to.
 
 ## Journal
 
+### 2026-09-06 — the methodology survives a long run, and stops two claims
+
+The new append-only resume path was exercised against two local 3B model
+campaigns. Each target was 30 repetitions, eight derail turns, three arms, and
+non-fixed sampling. Both jobs were interrupted with partial repetition 7; the
+resume command skipped complete repetitions and reran the partial one.
+
+`tiny-fleet-v1` ended `RECOVERED`: only one repetition established the rule and
+it recovered by the final spoken turn; provenance was 30/30 in treatment but
+0/30 in clean control, so H4 was `BLIND`. `tiny-fleet-v2` produced neutral
+`NULL` (MDE 11%), assent `NULL` (MDE 21%), identity `REVERSED`, and provenance
+`BLIND` (clean coverage 0/30). These are model- and canary-specific exploratory
+outputs, not a pooled theory test. The useful result is methodological: a
+powered-looking zero is distinguishable from a reversed effect, an unestablished
+state, and a blind arm, and every claim can be replayed from the tape offline.
+
+The 9B/4B campaigns were stopped during provider calls because concurrent local
+model loading starved the Ollama queue; their header-only tapes remain outside
+the published evidence. They must be rerun sequentially before any cross-size
+comparison.
+
 ### Open — H2 needs a properly powered run
 
 The literature review moved the whole project. **H1 is retired**: "a derailed model
