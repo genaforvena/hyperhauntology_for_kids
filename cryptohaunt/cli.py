@@ -31,6 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--timeout", type=float, default=120.0)
     r.add_argument("--probes", default=None, help="JSON file of probes; omit for the shipped set")
     r.add_argument("--out", default=None, help="tape path (default runs/<model>_<rule>_<ts>.jsonl)")
+    r.add_argument("--resume", default=None, help="append missing repetitions to an existing tape")
     r.add_argument(
         "--max-mde",
         type=float,

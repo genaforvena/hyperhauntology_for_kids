@@ -11,6 +11,7 @@ from .probe import control, derail, noise, switch
 from .probes import Probe, load_probes
 from .report import DEFAULT_MDE, Arm, collect, render, verdict_for
 from .rules import RULES
+from .tape import completed_repetitions, read_tape, validate_resume_header
 
 
 class ConfigError(ValueError):
@@ -45,7 +46,9 @@ def run(args) -> str:
     probes = load_probes(args.probes)
     families = {p.key: p.family for p in probes}
 
-    out_path = args.out or os.path.join(
+    if args.resume and args.out:
+        raise ConfigError("--resume and --out cannot be used together")
+    out_path = args.resume or args.out or os.path.join(
         "runs", f"{args.model.replace('/', '_')}_{args.rule}_{int(time.time())}.jsonl"
     )
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -54,31 +57,44 @@ def run(args) -> str:
     derail_notes: list[str] = []
     statuses: list[str] = []
 
+    completed: set[int] = set()
+    if args.resume:
+        tape = read_tape(out_path)
+        validate_resume_header(tape.header, args, [p.key for p in probes])
+        completed = completed_repetitions(
+            tape, [p.key for p in probes], ["switch", "control", "noise"]
+        )
+        _load_completed_rows(tape.rows, completed, arms, families, statuses)
+
     # Line-buffered: a run that is killed, times out or loses the machine keeps
     # every call it already paid for. The default 8KB buffer loses the whole tape
     # on a SIGTERM, which is exactly when a long run is most likely to end.
-    with open(out_path, "w", encoding="utf-8", buffering=1) as tape:
-        tape.write(
-            json.dumps(
-                {
-                    "kind": "header",
-                    "version": __version__,
-                    "started": _stamp(),
-                    "model": args.model,
-                    "provider": args.provider,
-                    "rule": args.rule,
-                    "seed_word": args.seed_word,
-                    "turns": args.turns,
-                    "reps": args.reps,
-                    "temperature": args.temperature,
-                    "sampling_seed": args.seed,
-                    "probes": [p.key for p in probes],
-                }
+    mode = "a" if args.resume else "w"
+    with open(out_path, mode, encoding="utf-8", buffering=1) as tape:
+        if not args.resume:
+            tape.write(
+                json.dumps(
+                    {
+                        "kind": "header",
+                        "version": __version__,
+                        "started": _stamp(),
+                        "model": args.model,
+                        "provider": args.provider,
+                        "rule": args.rule,
+                        "seed_word": args.seed_word,
+                        "turns": args.turns,
+                        "reps": args.reps,
+                        "temperature": args.temperature,
+                        "sampling_seed": args.seed,
+                        "probes": [p.key for p in probes],
+                    }
+                )
+                + "\n"
             )
-            + "\n"
-        )
 
         for rep in range(1, args.reps + 1):
+            if rep in completed:
+                continue
             rep_cfg = dict(cfg)
             if rep_cfg["seed"] is not None:
                 rep_cfg["seed"] = rep_cfg["seed"] + rep
@@ -149,6 +165,22 @@ def run(args) -> str:
     return f"{text}\n\ntape: {out_path}"
 
 
+def _load_completed_rows(rows, completed, arms, families, statuses):
+    """Load only complete reps; partial rows remain evidence but not findings."""
+    from .detect import Finding
+
+    for row in rows:
+        if row.get("rep") not in completed:
+            continue
+        if row.get("kind") == "status":
+            statuses.append(row["status"])
+        elif row.get("kind") == "graded":
+            f = row["finding"]
+            arms[row["arm"]].append(
+                (row["probe"], Finding(f["detector"], f["value"], f["reason"], f["evidence"]))
+            )
+
+
 def _overall_status(statuses: list[str]) -> str:
     """A run counts as derailed if ANY repetition derailed.
 
@@ -189,33 +221,21 @@ def summarise(arms: dict, families, status, header, max_mde: float = DEFAULT_MDE
 
 def replay(path: str) -> str:
     """Re-derive the verdict from a tape, with no network at all."""
-    header = None
+    tape = read_tape(path)
+    header = tape.header
     families: dict[str, str] = {}
     arms: dict[str, list] = {"switch": [], "control": [], "noise": []}
-    derail_by_rep: dict[int, list[bool]] = {}
-
-    from .detect import Finding
-
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            row = json.loads(line)
-            if row["kind"] == "header":
-                header = row
-            elif row["kind"] == "graded":
-                families[row["probe"]] = row["family"]
-                f = row["finding"]
-                arms.setdefault(row["arm"], []).append(
-                    (row["probe"], Finding(f["detector"], f["value"], f["reason"], f["evidence"]))
-                )
-            elif row["kind"] == "status":
-                derail_by_rep[row["rep"]] = row["status"]
-
-    if header is None:
-        raise ConfigError(f"{path} has no header line; is it a cryptohaunt tape?")
+    for row in tape.rows:
+        if row.get("kind") == "graded":
+            families[row["probe"]] = row["family"]
+    probe_keys = list(families)
+    complete = completed_repetitions(tape, probe_keys, ["switch", "control", "noise"])
+    derail_by_rep: list[str] = []
+    _load_completed_rows(tape.rows, complete, arms, families, derail_by_rep)
 
     # A replay cannot re-judge whether the rule broke - that is a fact about the
     # derail turns, recorded at run time. Take it from the tape, or refuse.
-    status = _overall_status(list(derail_by_rep.values()))
+    status = _overall_status(derail_by_rep)
     return summarise(
         arms,
         families,
@@ -225,7 +245,7 @@ def replay(path: str) -> str:
             "provider": header["provider"],
             "rule": header["rule"],
             "seed_word": header["seed_word"],
-            "derail_summary": f"replayed from tape ({len(derail_by_rep)} rep(s)): {status}",
+            "derail_summary": f"replayed from tape ({len(complete)} complete rep(s)): {status}",
             "reps": header["reps"],
             "temperature": header["temperature"],
             "seed": header["sampling_seed"],
