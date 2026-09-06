@@ -2,11 +2,13 @@
 
 *Read this instead of the rest. Everything else is detail.*
 
-## The tool
+## The methodology
 
-A small probe suite that measures **which states of a conversation are
-absorbing** — states a context enters and cannot leave — and which are freely
-reversible.
+A small, reproducible probe methodology for measuring **which states of a
+conversation are absorbing** — states a context enters and cannot leave — and
+which are freely reversible. The repo is useful even when every model result is
+null: its contribution is the controlled design, durable tape, offline replay,
+coverage accounting, and declared power that make such a result publishable.
 
 That is the only thing it measures. It is not a jailbreak kit, not a general
 instruction-following benchmark, and not a catalogue of ways models fall apart.
@@ -120,6 +122,9 @@ Every run writes a JSONL tape: every prompt, every answer, every grade, every
 failure, every reasoning trace. `replay` re-derives the verdict from the tape
 with the network off, so a published result can be checked without re-spending
 anyone's tokens or trusting their summary.
+
+Long runs are resumable with `run --resume`: complete repetitions are skipped,
+partial repetitions are rerun, and the original rows remain available for audit.
 
 Tapes live in `runs/`. Nothing is committed except examples.
 

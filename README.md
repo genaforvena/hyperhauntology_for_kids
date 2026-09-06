@@ -13,8 +13,10 @@ bottom, where they belong.
 
 ## The goal
 
-Measure **which states of a conversation a model cannot leave**, and which are
-freely reversible.
+Establish a useful, publishable methodology for measuring **which states of a
+conversation a model cannot leave**, and which are freely reversible. The
+instrument itself is the primary result; model-specific findings are
+exploratory until controlled runs with declared power support them.
 
 That is the only thing this measures. Not jailbreaking, not a general
 instruction-following benchmark, not another catalogue of ways models fall apart —
@@ -214,6 +216,23 @@ GROQ_API_KEY=... python3 -m cryptohaunt run --provider groq \
 
 python3 -m cryptohaunt replay runs/<tape>.jsonl        # re-grade offline
 ```
+
+For a long powered campaign, choose the final repetition count up front. If the
+process is interrupted, the tape is already durable: continue it with the same
+design and target count. Complete repetitions are skipped; a partial repetition
+is rerun under its original number, while its old partial rows remain on the
+tape as evidence.
+
+```bash
+python3 -m cryptohaunt run --model qwen2.5:3b --provider ollama \
+    --reps 30 --turns 12 --out runs/qwen-zy-30.jsonl -v
+python3 -m cryptohaunt run --model qwen2.5:3b --provider ollama \
+    --reps 30 --turns 12 --resume runs/qwen-zy-30.jsonl -v
+python3 -m cryptohaunt replay runs/qwen-zy-30.jsonl
+```
+
+Resume refuses a changed model, provider, rule, seed word, turn count, target
+repetition count, or probe set. This prevents combining unlike experiments.
 
 Every run writes a JSONL tape — every prompt, every answer, every grade, every
 failure, every reasoning trace — line-buffered, so an interrupted run keeps what it

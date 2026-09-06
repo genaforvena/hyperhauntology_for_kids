@@ -104,6 +104,11 @@ class TestResumeValidation(unittest.TestCase):
         finally:
             path.unlink(missing_ok=True)
 
+    def test_resume_workflow_is_documented(self):
+        readme = Path("README.md").read_text(encoding="utf-8")
+        self.assertIn("--resume", readme)
+        self.assertIn("complete repetition", readme.lower())
+
 
 if __name__ == "__main__":
     unittest.main()
