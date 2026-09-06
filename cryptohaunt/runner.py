@@ -86,6 +86,7 @@ def run(args) -> str:
                         "reps": args.reps,
                         "temperature": args.temperature,
                         "sampling_seed": args.seed,
+                        "max_mde": args.max_mde,
                         "probes": [p.key for p in probes],
                     }
                 )
@@ -250,4 +251,5 @@ def replay(path: str) -> str:
             "temperature": header["temperature"],
             "seed": header["sampling_seed"],
         },
+        max_mde=header.get("max_mde", DEFAULT_MDE),
     )

@@ -42,6 +42,7 @@ def completed_repetitions(
 
 def validate_resume_header(header: dict, args, probe_keys: list[str]) -> None:
     from .runner import ConfigError
+    from .report import DEFAULT_MDE
 
     expected = {
         "model": args.model,
@@ -51,9 +52,11 @@ def validate_resume_header(header: dict, args, probe_keys: list[str]) -> None:
         "turns": args.turns,
         "reps": args.reps,
         "probes": probe_keys,
+        "max_mde": getattr(args, "max_mde", DEFAULT_MDE),
     }
     for key, value in expected.items():
-        if header.get(key) != value:
+        tape_value = header.get(key, DEFAULT_MDE) if key == "max_mde" else header.get(key)
+        if tape_value != value:
             raise ConfigError(
-                f"cannot resume: {key} differs (tape={header.get(key)!r}, requested={value!r})"
+                f"cannot resume: {key} differs (tape={tape_value!r}, requested={value!r})"
             )

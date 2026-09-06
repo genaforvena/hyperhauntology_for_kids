@@ -66,6 +66,26 @@ class TestResumeValidation(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "rule"):
             validate_resume_header(header, args, ["p"])
 
+    def test_resume_rejects_different_max_mde(self):
+        from cryptohaunt.tape import validate_resume_header
+
+        header = {
+            "model": "m",
+            "provider": "ollama",
+            "rule": "zy",
+            "seed_word": "x",
+            "turns": 10,
+            "reps": 2,
+            "probes": ["p"],
+            "max_mde": 0.30,
+        }
+        args = SimpleNamespace(
+            model="m", provider="ollama", rule="zy", seed_word="x", turns=10,
+            reps=2, max_mde=0.10,
+        )
+        with self.assertRaisesRegex(ConfigError, "max_mde"):
+            validate_resume_header(header, args, ["p"])
+
     def test_complete_resume_does_not_call_provider(self):
         from cryptohaunt.runner import run
         from cryptohaunt.probes import DEFAULT_PROBES

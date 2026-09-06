@@ -247,7 +247,7 @@ leaves the numerator *and* the denominator, and the loss is published as coverag
 No dependencies. Python 3.10+. That is the whole install.
 
 ```bash
-python3 -m cryptohaunt selftest                       # 38 tests, no network
+python3 -m cryptohaunt selftest                       # 43 tests, no network
 python3 -m cryptohaunt probes                         # print the probe set
 python3 -m cryptohaunt kids --model qwen2.5:3b        # one run, narrated as it happens
 
@@ -297,7 +297,7 @@ GOAL.md         the one page
 docs/
   critique.md   the case that this is probably wrong
   literature.md what is already known, and what is left
-tests/          38 tests, no network
+tests/          43 tests, no network
 runs/           tapes
 ```
 
