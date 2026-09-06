@@ -180,12 +180,12 @@ Expected before docs change: FAIL; after docs change: PASS.
 Run: `python3 -m unittest discover -v` and `python3 -m cryptohaunt selftest`.
 Expected: 43 tests pass, both commands exit 0, and no network is used.
 
-- [ ] **Step 4: Verify offline replay and repository sync**
+- [x] **Step 4: Verify offline replay and repository sync**
 
 Run: `git fetch --prune origin && git status --short --branch && python3 -m cryptohaunt replay runs/example-verified.jsonl` after placing a checked-in example tape at that exact path.
 Expected: branch is not behind `origin/main`; replay produces a verdict without network access; no unrelated files are modified.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add README.md GOAL.md tests/test_tape.py
@@ -203,7 +203,7 @@ git commit -m "docs: publish the resumable powered-run workflow"
 ### Task 4: Validate the methodology with extensive local campaigns
 
 **Files:**
-- Create: `runs/example-verified.jsonl`
+- Create: `runs/example-verified.jsonl` (sanitized fixture)
 - Modify: `README.md`
 
 **Interfaces:**
@@ -212,8 +212,8 @@ git commit -m "docs: publish the resumable powered-run workflow"
 
 - [x] **Step 1: Run a smoke campaign and preserve a checked-in replay fixture**
 
-Run: `python3 -m cryptohaunt run --model tiny-fleet-v1:latest --provider ollama --rule zy --turns 8 --reps 1 --temperature 0.7 --seed 7 --out runs/example-verified.jsonl -v`.
-Expected: a JSONL tape with header, status, and all three arms; any `BLIND`, `MUTE`, `TRUNCATED`, or `INCONCLUSIVE` result is retained honestly.
+Run: `python3 -m cryptohaunt run --model tiny-fleet-v1:latest --provider ollama --rule zy --turns 8 --reps 1 --temperature 0.7 --seed 7 --out runs/example-verified.jsonl -v` and sanitize any provider prompt-provenance text before committing.
+Expected: a JSONL tape with header, status, and all three arms; any `BLIND`, `MUTE`, `TRUNCATED`, or `INCONCLUSIVE` result is retained honestly, and the checked-in fixture contains no operator or system-prompt text.
 
 - [x] **Step 2: Replay the fixture offline**
 
@@ -229,7 +229,7 @@ Run the same design at `--reps 30` sequentially for each available model, starti
 Stop one powered run after at least one repetition, then run the identical command with `--resume` and the same `--reps 30` target.
 Expected: complete repetitions are skipped, a partial repetition is rerun, tape line count only increases, and replay agrees with the live summary.
 
-- [ ] **Step 5: Commit the fixture and methodology record**
+- [x] **Step 5: Commit the fixture and methodology record**
 
 ```bash
 git add runs/example-verified.jsonl README.md
