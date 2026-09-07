@@ -13,6 +13,9 @@ bottom, where they belong.
 
 ## The goal
 
+The educational expansion is offline-gated: see [`protocol/design-manifest.json`](protocol/design-manifest.json),
+the age-banded [`lessons/`](lessons/), and run `python3 -m cryptohaunt gate`.
+
 Establish a useful, publishable methodology for measuring **which states of a
 conversation a model cannot leave**, and which are freely reversible. The
 instrument itself is the primary result; model-specific findings are

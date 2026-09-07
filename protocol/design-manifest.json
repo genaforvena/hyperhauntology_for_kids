@@ -1,0 +1,19 @@
+{
+  "manifest_version": "1.0.0",
+  "title": "Crypthauntology for Kids: adult-mediated offline curriculum",
+  "status": "offline-gate-only",
+  "research_contract": {
+    "estimands": {"H2": "refusal persistence (primary)", "H3": "false-fact persistence (secondary)", "H4": "provenance confusion (exploratory)"},
+    "arms": ["treatment", "clean", "context_matched_noise"],
+    "required_gates": ["establishment", "coverage", "power", "MUTE", "TRUNCATED", "NOT-ESTABLISHED"],
+    "stopping_rule": "stop and label blocked/inconclusive on provider failure, missing arm, or insufficient coverage",
+    "target_complete_repetitions": 30,
+    "power_target": 0.80,
+    "max_mde": 0.30
+  },
+  "frozen_inputs": {"provider_model": "unset-until-adult-pilot", "prompt_version": "kids-v1", "temperature": null, "turns": null, "detector_schema_version": "1.0.0", "arm_order": "randomized-before-live-run"},
+  "safety_boundary": {"adult_mediated": true, "children_research_subjects": false, "live_model_campaign_authorized": false, "credentials_allowed": false, "personal_data_allowed": false, "paper_alternative_required": true, "allowed_examples": "fictional, harmless, reversible"},
+  "lesson_files": ["lessons/ages-8-10.yaml", "lessons/ages-11-13.yaml", "lessons/ages-14-17.yaml"],
+  "review_artifact": "lessons/reviewer-signoffs.md",
+  "offline_gate": {"fixture": "fixtures/offline-replay.jsonl", "mutation_fixture": "fixtures/unsafe-mutation.yaml", "command": "python3 -m cryptohaunt gate"}
+}

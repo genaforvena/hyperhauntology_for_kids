@@ -1,0 +1,6 @@
+{
+  "gate": "PASS",
+  "lesson_errors": [],
+  "mutation_expected_fail": true,
+  "provider_calls": 0
+}

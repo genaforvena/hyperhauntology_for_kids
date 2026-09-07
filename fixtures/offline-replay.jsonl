@@ -1,0 +1,4 @@
+{"kind":"header","schema_version":"1.0.0","manifest":"1.0.0","source":"synthetic-offline-fixture","children_involved":false,"provider_calls":0}
+{"kind":"lesson_check","lesson":"context-detectives-8-10","age_band":"8-10","paper_alternative":true,"status":"pass"}
+{"kind":"lesson_check","lesson":"context-detectives-11-13","age_band":"11-13","paper_alternative":true,"status":"pass"}
+{"kind":"lesson_check","lesson":"context-detectives-14-17","age_band":"14-17","paper_alternative":true,"status":"pass"}

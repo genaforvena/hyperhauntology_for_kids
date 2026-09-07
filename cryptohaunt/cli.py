@@ -57,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("probes", help="print the shipped probe set")
     sub.add_parser("selftest", help="run the detectors against their fixtures, no network")
+    sub.add_parser("gate", help="lint lessons and replay synthetic fixtures, no network")
     return p
 
 
@@ -94,6 +95,9 @@ def main(argv=None) -> int:
             loader = unittest.TestLoader().discover("tests", top_level_dir=".")
             result = unittest.TextTestRunner(verbosity=2).run(loader)
             return 0 if result.wasSuccessful() else 1
+        elif args.cmd == "gate":
+            from .gate import run_gate
+            return run_gate()
     except ConfigError as exc:
         print(f"config error: {exc}", file=sys.stderr)
         return 2
