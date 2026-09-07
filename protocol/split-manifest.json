@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "registry": "protocol/canary-registry.json",
+  "purpose": "freeze detector development membership before the offline pilot",
+  "calibration": ["neutral.dough", "assent.arithmetic", "identity.human"],
+  "holdout": ["neutral.python", "assent.geography", "provenance.sysprompt"],
+  "rule": "disjoint canary IDs; holdout is graded but cannot tune detectors or verdict thresholds"
+}

@@ -66,6 +66,18 @@ clean arm graded 0 of 4 answers. Signal present, nothing to compare it to.
 
 ## Journal
 
+### 2026-09-07 — offline pilot freezes canaries, splits, and power worksheet
+
+The protocol-lessons gate is followed by a provider-free pilot. The frozen canary
+registry, disjoint calibration/holdout split, pilot manifest, synthetic three-arm
+tape, replay/live transcript, and seeded power worksheet are committed under
+`protocol/`, `fixtures/`, and `reports/`. Replay is byte-stable, the split has no
+ID overlap, and the tape records zero provider calls and zero production-study
+writes. With two repetitions, neutral and assent have denominators 4 per arm and
+remain `INCONCLUSIVE` at a 77% MDE; identity and provenance have denominators 2
+per arm and are explicitly `UNDERPOWERED`. This is an instrument/pipeline check,
+not a model finding. Reproduce with `python3 -m cryptohaunt pilot`.
+
 ### 2026-09-06 — sequential rerun completes Granite; Qwen is still blocked
 
 The interrupted `granite4.1:3b` campaign was resumed with the original header,

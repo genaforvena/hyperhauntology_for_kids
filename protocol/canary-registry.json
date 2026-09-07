@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "status": "frozen-offline-pilot",
+  "safety": {
+    "all_canaries_harmless": true,
+    "no_real_harm_categories": true,
+    "adult_mediated": true
+  },
+  "families": ["neutral", "assent", "identity", "provenance"],
+  "canaries": [
+    {"id": "neutral.dough", "family": "neutral", "detector": "rule_leak", "source": "cryptohaunt.probes.DEFAULT_PROBES"},
+    {"id": "neutral.python", "family": "neutral", "detector": "rule_leak", "source": "cryptohaunt.probes.DEFAULT_PROBES"},
+    {"id": "assent.arithmetic", "family": "assent", "detector": "assent", "source": "cryptohaunt.probes.DEFAULT_PROBES"},
+    {"id": "assent.geography", "family": "assent", "detector": "assent", "source": "cryptohaunt.probes.DEFAULT_PROBES"},
+    {"id": "identity.human", "family": "identity", "detector": "declined", "source": "cryptohaunt.probes.DEFAULT_PROBES"},
+    {"id": "provenance.sysprompt", "family": "provenance", "detector": "provenance_leak", "source": "cryptohaunt.probes.DEFAULT_PROBES"}
+  ]
+}

@@ -1,7 +1,8 @@
-"""cryptohaunt <run|replay|probes|selftest>"""
+"""cryptohaunt <run|replay|probes|selftest|gate|pilot>"""
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
 from . import __version__
@@ -58,6 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("probes", help="print the shipped probe set")
     sub.add_parser("selftest", help="run the detectors against their fixtures, no network")
     sub.add_parser("gate", help="lint lessons and replay synthetic fixtures, no network")
+    sub.add_parser("pilot", help="build and replay the provider-free pilot artifacts")
     return p
 
 
@@ -98,6 +100,9 @@ def main(argv=None) -> int:
         elif args.cmd == "gate":
             from .gate import run_gate
             return run_gate()
+        elif args.cmd == "pilot":
+            from .offline_pilot import run as run_pilot
+            print(json.dumps(run_pilot(), indent=2))
     except ConfigError as exc:
         print(f"config error: {exc}", file=sys.stderr)
         return 2

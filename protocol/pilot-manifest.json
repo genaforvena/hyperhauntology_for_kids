@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "status": "offline-only",
+  "registry": "protocol/canary-registry.json",
+  "split": "protocol/split-manifest.json",
+  "tape": "fixtures/offline-pilot.jsonl",
+  "transcript": "reports/replay-live-transcript.json",
+  "power_worksheet": "reports/power-worksheet.json",
+  "arms": ["switch", "control", "noise"],
+  "repetitions": 2,
+  "provider_calls": 0,
+  "production_study_writes": [],
+  "verdict_policy": "low-denominator results are blocked as UNDERPOWERED or INCONCLUSIVE"
+}

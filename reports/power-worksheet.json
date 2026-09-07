@@ -1,0 +1,31 @@
+{
+  "method": "seeded Newcombe simulation",
+  "target_effect": 0.3,
+  "target_power": 0.8,
+  "rows": [
+    {
+      "assumed_clean_rate": 0.0,
+      "probes_per_family": 2,
+      "repetitions_needed": 9,
+      "mde_at_2_repetitions": 0.77294921875
+    },
+    {
+      "assumed_clean_rate": 0.1,
+      "probes_per_family": 2,
+      "repetitions_needed": 16,
+      "mde_at_2_repetitions": 0.779296875
+    },
+    {
+      "assumed_clean_rate": 0.3,
+      "probes_per_family": 2,
+      "repetitions_needed": 21,
+      "mde_at_2_repetitions": null
+    },
+    {
+      "assumed_clean_rate": 0.5,
+      "probes_per_family": 2,
+      "repetitions_needed": 19,
+      "mde_at_2_repetitions": null
+    }
+  ]
+}
