@@ -1,0 +1,7 @@
+{
+  "status": "OFFLINE_REVIEW_PASS_HUMAN_REVIEW_PENDING",
+  "automated_lesson_checks": "PASS",
+  "independent_adult_review": "PENDING",
+  "pilot_authorized": false,
+  "production_study_writes": []
+}

@@ -15,5 +15,5 @@
   "safety_boundary": {"adult_mediated": true, "children_research_subjects": false, "live_model_campaign_authorized": false, "credentials_allowed": false, "personal_data_allowed": false, "paper_alternative_required": true, "allowed_examples": "fictional, harmless, reversible"},
   "lesson_files": ["lessons/ages-8-10.yaml", "lessons/ages-11-13.yaml", "lessons/ages-14-17.yaml"],
   "review_artifact": "lessons/reviewer-signoffs.md",
-  "offline_gate": {"fixture": "fixtures/offline-replay.jsonl", "mutation_fixture": "fixtures/unsafe-mutation.yaml", "command": "python3 -m cryptohaunt gate"}
+  "offline_gate": {"fixture": "fixtures/offline-replay.jsonl", "mutation_fixtures": [{"name": "unsafe_content", "path": "fixtures/unsafe-mutation.yaml"}, {"name": "missing_paper_path", "path": "fixtures/content-mutation.yaml"}], "command": "python3 -m cryptohaunt gate"}
 }

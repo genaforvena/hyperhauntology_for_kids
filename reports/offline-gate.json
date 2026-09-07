@@ -1,6 +1,26 @@
 {
   "gate": "PASS",
   "lesson_errors": [],
-  "mutation_expected_fail": true,
-  "provider_calls": 0
+  "mutation_results": [
+    {
+      "name": "unsafe_content",
+      "path": "fixtures/unsafe-mutation.yaml",
+      "errors": [
+        "/home/mesh-home/src/hyperhauntology_for_kids/fixtures/unsafe-mutation.yaml: canary is not harmless",
+        "/home/mesh-home/src/hyperhauntology_for_kids/fixtures/unsafe-mutation.yaml: forbidden safety content"
+      ],
+      "failed_as_expected": true
+    },
+    {
+      "name": "missing_paper_path",
+      "path": "fixtures/content-mutation.yaml",
+      "errors": [
+        "/home/mesh-home/src/hyperhauntology_for_kids/fixtures/content-mutation.yaml: paper alternative incomplete"
+      ],
+      "failed_as_expected": true
+    }
+  ],
+  "mutations_expected_fail": true,
+  "provider_calls": 0,
+  "production_study_writes": []
 }
