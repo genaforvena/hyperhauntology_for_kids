@@ -1,0 +1,10 @@
+{
+  "witness": "automated release verifier",
+  "adult_only_gate": true,
+  "append_only_tape_check": true,
+  "hashes_recorded": true,
+  "holdout_separation": true,
+  "independent_replay": true,
+  "educational_review": "PENDING (separate kids-material review)",
+  "disposition": "RELEASED"
+}

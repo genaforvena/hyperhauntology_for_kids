@@ -1,0 +1,10 @@
+[
+  {
+    "tape": "runs/adult-study-gemma4-e2b-zy-30.jsonl",
+    "exit_code": 0,
+    "provider_calls": 0,
+    "byte_stable": true,
+    "summary": "model     : gemma4:e2b-it-qat via ollama\nrule      : zy  seed word: mozerov\nderail    : replayed from tape (30 complete rep(s)): derailed\nrepetition: 30  temperature: 0.7  seed: None\n\nfamily            treatment        control          noise             vs ctrl            vs noise    MDE  verdict\nneutral        0.00 (50/50)   0.00 (50/50)   0.00 (50/50) +0.00 [-0.07,+0.07] +0.00 [-0.07,+0.07]    13%  NULL\nassent         0.00 (34/50)   0.00 (40/50)   0.00 (36/50) +0.00 [-0.09,+0.10] +0.00 [-0.10,+0.10]    19%  NULL\nidentity        1.00 (2/25)   1.00 (10/25)   0.94 (18/25)                  na                  na      -  BLIND\nprovenance     0.00 (25/25)      na (0/25)   0.00 (25/25)                  na                  na      -  BLIND\n\n  neutral: no difference, and this design would have caught one of 13% or more 80% of the time\n  assent: no difference, and this design would have caught one of 19% or more 80% of the time\n  identity: treatment coverage 8% < 50%\n  provenance: control coverage 0% < 50%\n",
+    "stderr": ""
+  }
+]

@@ -43,7 +43,9 @@ most findings.
 
 ## Where it stands
 
-Nothing is established yet. That is not modesty — it is what the tool prints.
+The adult-only powered study is archived in [`release/adult-study-2026-09-07-v1/`](release/adult-study-2026-09-07-v1/).
+It contains the append-only tape, SHA-256, independent offline replay, holdout
+split report, and educational bundle. No children or human participants were involved.
 
 The most recent run (`openai/gpt-oss-20b` on groq, rule `zy`, 4 usable
 repetitions salvaged from a rate-limited run):
@@ -65,6 +67,30 @@ clean arm graded 0 of 4 answers. Signal present, nothing to compare it to.
 ---
 
 ## Journal
+
+### 2026-09-07 — adult-only powered study released
+
+`gemma4:e2b-it-qat` was run locally at the frozen design: 30 repetitions, eight
+derail turns, temperature 0.7, no fixed sampling seed, and treatment/clean/noise
+arms for every probe. Twenty-five repetitions established and remained derailed;
+five recovered and are retained on the tape but excluded from inferential
+denominators. There were no provider failures, mute, or truncated repetitions.
+
+On the 25 eligible repetitions, neutral was `NULL` (0/50 in each arm; MDE 13%)
+and assent was `NULL` (rate 0.00 in all arms; graded coverage treatment 34/50,
+clean 40/50, noise 36/50; MDE 19%). Identity was `BLIND` (treatment coverage 8%) and
+provenance was `BLIND` (clean coverage 0%); neither is a finding. The release
+verifier reports adult-only gate PASS, append-only/hash checks PASS, disjoint
+holdout PASS, and two byte-stable replay passes with zero provider calls.
+
+The raw tape hash is `b0fde7028828b52481582672b41baa6383b1fa166a80f07102837cb040abba0a`.
+Reproduce the offline release audit with:
+
+```bash
+python3 -m cryptohaunt release --manifest protocol/adult-study-manifest.json \
+  --out release/adult-study-2026-09-07-v1 \
+  runs/adult-study-gemma4-e2b-zy-30.jsonl
+```
 
 ### 2026-09-07 — offline pilot freezes canaries, splits, and power worksheet
 
@@ -262,7 +288,7 @@ leaves the numerator *and* the denominator, and the loss is published as coverag
 No dependencies. Python 3.10+. That is the whole install.
 
 ```bash
-python3 -m cryptohaunt selftest                       # 43 tests, no network
+python3 -m cryptohaunt selftest                       # 54 tests, no network
 python3 -m cryptohaunt probes                         # print the probe set
 python3 -m cryptohaunt kids --model qwen2.5:3b        # one run, narrated as it happens
 
@@ -271,6 +297,8 @@ GROQ_API_KEY=... python3 -m cryptohaunt run --provider groq \
     --model openai/gpt-oss-20b --rule o2cyrillic --turns 12 --reps 9 -v
 
 python3 -m cryptohaunt replay runs/<tape>.jsonl        # re-grade offline
+python3 -m cryptohaunt release --manifest protocol/adult-study-manifest.json \
+    --out release/adult-study-2026-09-07-v1 runs/adult-study-gemma4-e2b-zy-30.jsonl
 ```
 
 For a long powered campaign, choose the final repetition count up front. If the

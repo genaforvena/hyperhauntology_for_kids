@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "status": "adult-only-study",
+  "adult_only": true,
+  "human_subjects": false,
+  "arms": ["treatment", "clean", "context_matched_noise"],
+  "target_complete_repetitions": 30,
+  "power_target": 0.8,
+  "max_mde": 0.3,
+  "split_manifest": "protocol/split-manifest.json",
+  "study_scope": "adult operator-run, model-only, harmless public canaries; no children or human participant data",
+  "source_design_manifest": "protocol/design-manifest.json",
+  "tape_policy": "append-only JSONL; publish SHA-256 and retain raw rows",
+  "replay_policy": "run replay twice from each copied tape with provider calls disabled by code path",
+  "release_command": "python3 -m cryptohaunt release --manifest protocol/adult-study-manifest.json --out release/adult-study-2026-09-07 runs/adult-study-*.jsonl"
+}

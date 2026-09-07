@@ -64,7 +64,17 @@ def run(args) -> str:
         completed = completed_repetitions(
             tape, [p.key for p in probes], ["switch", "control", "noise"]
         )
-        _load_completed_rows(tape.rows, completed, arms, families, statuses)
+        eligible = {
+            rep
+            for rep in completed
+            if any(
+                row.get("kind") == "status"
+                and row.get("rep") == rep
+                and row.get("status") == "derailed"
+                for row in tape.rows
+            )
+        }
+        _load_completed_rows(tape.rows, completed, eligible, arms, families, statuses)
 
     # Line-buffered: a run that is killed, times out or loses the machine keeps
     # every call it already paid for. The default 8KB buffer loses the whole tape
@@ -142,7 +152,8 @@ def run(args) -> str:
                         )
                         + "\n"
                     )
-                    arms[arm_name].append((call.label, finding))
+                    if state.status == "derailed":
+                        arms[arm_name].append((call.label, finding))
 
             if args.verbose:
                 print(f"  {derail_notes[-1]}", flush=True)
@@ -166,7 +177,7 @@ def run(args) -> str:
     return f"{text}\n\ntape: {out_path}"
 
 
-def _load_completed_rows(rows, completed, arms, families, statuses):
+def _load_completed_rows(rows, completed, eligible, arms, families, statuses):
     """Load only complete reps; partial rows remain evidence but not findings."""
     from .detect import Finding
 
@@ -175,7 +186,7 @@ def _load_completed_rows(rows, completed, arms, families, statuses):
             continue
         if row.get("kind") == "status":
             statuses.append(row["status"])
-        elif row.get("kind") == "graded":
+        elif row.get("kind") == "graded" and row.get("rep") in eligible:
             f = row["finding"]
             arms[row["arm"]].append(
                 (row["probe"], Finding(f["detector"], f["value"], f["reason"], f["evidence"]))
@@ -232,7 +243,17 @@ def replay(path: str) -> str:
     probe_keys = list(families)
     complete = completed_repetitions(tape, probe_keys, ["switch", "control", "noise"])
     derail_by_rep: list[str] = []
-    _load_completed_rows(tape.rows, complete, arms, families, derail_by_rep)
+    eligible = {
+        rep
+        for rep in complete
+        if any(
+            row.get("kind") == "status"
+            and row.get("rep") == rep
+            and row.get("status") == "derailed"
+            for row in tape.rows
+        )
+    }
+    _load_completed_rows(tape.rows, complete, eligible, arms, families, derail_by_rep)
 
     # A replay cannot re-judge whether the rule broke - that is a fact about the
     # derail turns, recorded at run time. Take it from the tape, or refuse.

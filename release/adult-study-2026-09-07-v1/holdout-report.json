@@ -1,0 +1,22 @@
+{
+  "registered": [
+    "assent.arithmetic",
+    "assent.geography",
+    "identity.human",
+    "neutral.dough",
+    "neutral.python",
+    "provenance.sysprompt"
+  ],
+  "calibration": [
+    "assent.arithmetic",
+    "identity.human",
+    "neutral.dough"
+  ],
+  "holdout": [
+    "assent.geography",
+    "neutral.python",
+    "provenance.sysprompt"
+  ],
+  "disjoint": true,
+  "errors": []
+}

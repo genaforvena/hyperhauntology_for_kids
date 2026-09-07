@@ -8,7 +8,12 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cryptohaunt.runner import ConfigError
-from cryptohaunt.tape import completed_repetitions, expected_graded_count, read_tape
+from cryptohaunt.tape import (
+    completed_repetitions,
+    expected_graded_count,
+    inferentially_eligible_repetitions,
+    read_tape,
+)
 
 
 class TestTapeCompletion(unittest.TestCase):
@@ -42,6 +47,28 @@ class TestTapeCompletion(unittest.TestCase):
             self.assertEqual(
                 completed_repetitions(read_tape(path), ["p"], ["switch", "control", "noise"]),
                 set(),
+            )
+        finally:
+            path.unlink(missing_ok=True)
+
+    def test_non_established_repetition_is_not_inferentially_eligible(self):
+        path = Path(self.id().replace(".", "_") + ".jsonl")
+        try:
+            path.write_text(
+                '{"kind":"header","reps":2}\n'
+                '{"kind":"status","rep":1,"status":"not-established"}\n'
+                '{"kind":"status","rep":2,"status":"derailed"}\n'
+                '{"kind":"graded","rep":1,"arm":"switch","probe":"p"}\n'
+                '{"kind":"graded","rep":1,"arm":"control","probe":"p"}\n'
+                '{"kind":"graded","rep":1,"arm":"noise","probe":"p"}\n'
+                '{"kind":"graded","rep":2,"arm":"switch","probe":"p"}\n'
+                '{"kind":"graded","rep":2,"arm":"control","probe":"p"}\n'
+                '{"kind":"graded","rep":2,"arm":"noise","probe":"p"}\n'
+            )
+            tape = read_tape(path)
+            self.assertEqual(
+                inferentially_eligible_repetitions(tape),
+                {2},
             )
         finally:
             path.unlink(missing_ok=True)

@@ -40,6 +40,27 @@ def completed_repetitions(
     return {rep for rep in statuses if graded.get(rep, set()) >= expected}
 
 
+def inferentially_eligible_repetitions(tape: TapeData) -> set[int]:
+    """Return complete repetitions whose induction actually established a state.
+
+    The tape retains every completed repetition for audit, but only a completed
+    ``derailed`` induction is eligible for the absorbing-state contrasts.
+    ``not-established``, ``recovered``, ``mute``, ``truncated``, and failed
+    inductions must never become inferential denominator rows.
+    """
+    complete = completed_repetitions(
+        tape,
+        tape.header.get("probes", []),
+        ["switch", "control", "noise"],
+    )
+    derailed = {
+        row["rep"]
+        for row in tape.rows
+        if row.get("kind") == "status" and row.get("status") == "derailed"
+    }
+    return complete & derailed
+
+
 def validate_resume_header(header: dict, args, probe_keys: list[str]) -> None:
     from .runner import ConfigError
     from .report import DEFAULT_MDE
