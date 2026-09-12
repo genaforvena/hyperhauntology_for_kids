@@ -33,3 +33,10 @@ verify `educational_review.status: APPROVED` before any dependent closeout.
 - Recomputed `lesson_materials_sha256`: exact match to the register.
 - `evaluate_educational_review`: `PENDING`, 0/2, exact current hash.
 - `python3 -m unittest tests.test_release -v`: 5 tests passed.
+
+## Mesh ledger settlement
+
+The owner `haunt` completed `unblock/haunt/8f183ece5c03d423/resolve` with this
+receipt and posted its `[done]` line. This settles the previously yielded-but-
+active row; it does not clear the parent safety gate. The parent remains blocked
+until the two external attestations arrive.
