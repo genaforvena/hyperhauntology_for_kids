@@ -135,6 +135,9 @@ Adult-only powered collection is complete for one local model and is released in
 were complete and 25 were inferentially eligible after excluding five recovered
 inductions. Neutral and assent were powered `NULL`s (MDE 13% and 19%); identity
 and provenance were `BLIND`, not findings, because coverage was insufficient.
+In particular, this release does **not** answer H2 (refusal persistence): its
+identity canary had only 2/25 gradeable treatment answers (8% coverage), so H2
+is `BLIND`, not `NULL` and not evidence for or against an absorbing refusal.
 No children or human participants were involved. The tape, hash, holdout report,
 independent replay, and educational materials are in the release bundle.
 
