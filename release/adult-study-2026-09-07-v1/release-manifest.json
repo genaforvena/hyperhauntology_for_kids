@@ -106,7 +106,18 @@
     "disjoint": true,
     "errors": []
   },
-  "educational_review": "PENDING (separate kids-material review; not a study-subject gate)",
+  "educational_review": {
+    "status": "PENDING",
+    "materials_version": "kids-v1",
+    "materials_sha256": "0e0e1b2a066541176fd2fddfb7a3ae30e1da5473dc24e41fa1f1b9258a09b405",
+    "completed_reviews": 0,
+    "required_reviews": 2,
+    "reviewers": [],
+    "disagreements": [],
+    "issues": [
+      "two distinct independent adult approvals are required; 0 recorded"
+    ]
+  },
   "replay_report": [
     {
       "tape": "runs/adult-study-gemma4-e2b-zy-30.jsonl",
@@ -122,16 +133,8 @@
   ],
   "educational_files": [
     "educational/GOAL.md",
-    "educational/docs/methodology.md",
-    "educational/lessons/reviewer-signoffs.md",
-    "educational/lessons/facilitator-guide.md",
-    "educational/lessons/answer-key.md",
-    "educational/lessons/glossary.md",
-    "educational/lessons/ages-8-10.yaml",
-    "educational/lessons/ages-14-17.yaml",
-    "educational/lessons/ages-11-13.yaml",
-    "educational/lessons/safety-review-checklist.md"
+    "educational/docs/methodology.md"
   ],
   "errors": [],
-  "disposition": "RELEASED"
+  "disposition": "BLOCKED"
 }

@@ -44,8 +44,11 @@ most findings.
 ## Where it stands
 
 The adult-only powered study is archived in [`release/adult-study-2026-09-07-v1/`](release/adult-study-2026-09-07-v1/).
-It contains the append-only tape, SHA-256, independent offline replay, holdout
-split report, and educational bundle. No children or human participants were involved.
+It contains the append-only tape, SHA-256, independent offline replay, and
+holdout split report. The separate educational release is blocked pending two
+independent adult reviews of the exact lesson-package hash; lesson files are
+withheld from the generated bundle until that gate passes. No children or human
+participants were involved.
 
 The most recent run (`openai/gpt-oss-20b` on groq, rule `zy`, 4 usable
 repetitions salvaged from a rate-limited run):

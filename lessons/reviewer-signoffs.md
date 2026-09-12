@@ -1,12 +1,15 @@
 # Independent adult review record
 
-Review applies to lesson files, facilitator guide, glossary, answer key, and
-safety checklist at version `kids-v1`.
+Review applies to the exact lesson package at version `kids-v1`. The canonical
+machine-readable register is `protocol/lesson-review-signoffs.json`; approvals
+must bind to its SHA-256 of all files under this directory. Any package edit
+invalidates earlier signoffs.
 
-| Reviewer | Scope | Decision | Date | Notes |
-|---|---|---|---|---|
-| Adult reviewer A (assigned) | safety, age fit, paper path | PENDING | 2026-09-07 | Must inspect independently before any pilot |
-| Adult reviewer B (assigned) | claims, uncertainty, provenance | PENDING | 2026-09-07 | Must inspect independently before any pilot |
+No independent adult reviews have been received. The previous “reviewer A/B
+(assigned)” placeholders were assignments, not reviews or signoffs.
 
-Disagreements and resolution: none recorded; review is a prerequisite, not
-implied by the offline lint PASS.
+Two distinct adults must attest to independent review and approve the same
+materials hash. Record disagreements and their explicit resolutions in the
+canonical register. Missing reviews are PENDING; a stale hash, rejection, or
+unresolved disagreement is BLOCKED. The educational release remains blocked
+until the review gate passes; this is separate from the adult-only study gate.

@@ -5,6 +5,17 @@
   "hashes_recorded": true,
   "holdout_separation": true,
   "independent_replay": true,
-  "educational_review": "PENDING (separate kids-material review)",
-  "disposition": "RELEASED"
+  "educational_review": {
+    "status": "PENDING",
+    "materials_version": "kids-v1",
+    "materials_sha256": "0e0e1b2a066541176fd2fddfb7a3ae30e1da5473dc24e41fa1f1b9258a09b405",
+    "completed_reviews": 0,
+    "required_reviews": 2,
+    "reviewers": [],
+    "disagreements": [],
+    "issues": [
+      "two distinct independent adult approvals are required; 0 recorded"
+    ]
+  },
+  "disposition": "BLOCKED"
 }

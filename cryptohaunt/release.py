@@ -13,6 +13,7 @@ from .tape import completed_repetitions, inferentially_eligible_repetitions, rea
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_ARMS = ["treatment", "clean", "context_matched_noise"]
+EDUCATIONAL_REVIEW_VERSION = "kids-v1"
 
 
 def validate_adult_manifest(manifest: dict) -> list[str]:
@@ -42,6 +43,87 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def lesson_materials_sha256(lessons_dir: str | Path) -> str:
+    """Hash lesson paths and contents so signoffs apply to one exact package."""
+    lessons_dir = Path(lessons_dir)
+    digest = hashlib.sha256()
+    for path in sorted(item for item in lessons_dir.rglob("*") if item.is_file()):
+        relative = path.relative_to(lessons_dir).as_posix()
+        digest.update(relative.encode("utf-8") + b"\0")
+        digest.update(bytes.fromhex(_sha256(path)))
+    return digest.hexdigest()
+
+
+def evaluate_educational_review(signoffs: dict, lessons_dir: str | Path) -> dict:
+    current_hash = lesson_materials_sha256(lessons_dir)
+    issues = []
+    blocked = False
+    if signoffs.get("schema_version") != "1.0.0":
+        issues.append("unsupported or missing signoff schema_version")
+        blocked = True
+    if signoffs.get("materials_version") != EDUCATIONAL_REVIEW_VERSION:
+        issues.append("materials version does not match the current review version")
+        blocked = True
+    if signoffs.get("materials_sha256") != current_hash:
+        issues.append("materials hash does not match the current lesson files")
+        blocked = True
+
+    reviewers = signoffs.get("reviewers", [])
+    if not isinstance(reviewers, list):
+        reviewers = []
+        issues.append("reviewers must be a list")
+        blocked = True
+    approvals = {}
+    for row in reviewers:
+        if not isinstance(row, dict):
+            issues.append("reviewer record must be an object")
+            blocked = True
+            continue
+        reviewer_id = row.get("reviewer_id")
+        if not reviewer_id or row.get("adult_attested") is not True or row.get("independent") is not True:
+            issues.append("each reviewer must identify themselves and attest adult status and independent review")
+            blocked = True
+            continue
+        if row.get("materials_sha256") != current_hash:
+            issues.append(f"reviewer {reviewer_id} reviewed a different materials hash")
+            blocked = True
+            continue
+        if row.get("decision") == "REJECT":
+            issues.append(f"reviewer {reviewer_id} did not approve the materials")
+            blocked = True
+            continue
+        if row.get("decision") != "APPROVE":
+            issues.append(f"reviewer {reviewer_id} has no approval decision")
+            blocked = True
+            continue
+        approvals[reviewer_id] = row
+
+    disagreements = signoffs.get("disagreements", [])
+    if not isinstance(disagreements, list):
+        disagreements = []
+        issues.append("disagreements must be a list")
+        blocked = True
+    unresolved = [row for row in disagreements if not isinstance(row, dict)
+                  or row.get("status") != "resolved" or not row.get("resolution")]
+    if unresolved:
+        issues.append(f"{len(unresolved)} unresolved disagreement(s)")
+        blocked = True
+
+    if len(approvals) < 2 and not blocked:
+        issues.append(f"two distinct independent adult approvals are required; {len(approvals)} recorded")
+    status = "BLOCKED" if blocked else ("APPROVED" if len(approvals) >= 2 else "PENDING")
+    return {
+        "status": status,
+        "materials_version": signoffs.get("materials_version"),
+        "materials_sha256": current_hash,
+        "completed_reviews": len(approvals),
+        "required_reviews": 2,
+        "reviewers": sorted(approvals),
+        "disagreements": disagreements,
+        "issues": issues,
+    }
 
 
 def validate_tape_for_release(path: str | Path, target_reps: int) -> dict:
@@ -106,6 +188,20 @@ def create_release(manifest_path: str | Path, tape_paths: list[str | Path], out_
     manifest_path = Path(manifest_path)
     out_dir = Path(out_dir)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    signoffs_path = ROOT / "protocol/lesson-review-signoffs.json"
+    try:
+        signoffs = json.loads(signoffs_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        signoffs = {
+            "schema_version": "1.0.0",
+            "materials_version": EDUCATIONAL_REVIEW_VERSION,
+            "materials_sha256": lesson_materials_sha256(ROOT / "lessons"),
+            "reviewers": [],
+            "disagreements": [],
+        }
+    except json.JSONDecodeError:
+        signoffs = {}
+    educational_review = evaluate_educational_review(signoffs, ROOT / "lessons")
     gate_errors = validate_adult_manifest(manifest)
     errors = list(gate_errors)
     split_report = _split_report(manifest, ROOT)
@@ -116,7 +212,13 @@ def create_release(manifest_path: str | Path, tape_paths: list[str | Path], out_
     out_dir.mkdir(parents=True, exist_ok=True)
     copied = []
     educational = []
-    for source in [ROOT / "GOAL.md", ROOT / "docs/methodology.md", ROOT / "lessons"]:
+    lesson_output = out_dir / "educational/lessons"
+    if educational_review["status"] != "APPROVED" and lesson_output.exists():
+        shutil.rmtree(lesson_output)
+    educational_sources = [ROOT / "GOAL.md", ROOT / "docs/methodology.md"]
+    if educational_review["status"] == "APPROVED":
+        educational_sources.append(ROOT / "lessons")
+    for source in educational_sources:
         if source.is_dir():
             for item in source.rglob("*"):
                 if item.is_file():
@@ -168,12 +270,12 @@ def create_release(manifest_path: str | Path, tape_paths: list[str | Path], out_
         "manifest": str(manifest_path),
         "tapes": tapes,
         "holdout_report": split_report,
-        "educational_review": "PENDING (separate kids-material review; not a study-subject gate)",
+        "educational_review": educational_review,
         "replay_report": replay_rows,
         "copied_tapes": copied,
         "educational_files": educational,
         "errors": errors,
-        "disposition": "RELEASED" if not errors else "BLOCKED",
+        "disposition": "RELEASED" if not errors and educational_review["status"] == "APPROVED" else "BLOCKED",
     }
     (out_dir / "release-manifest.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     (out_dir / "replay-report.json").write_text(json.dumps(replay_rows, indent=2) + "\n", encoding="utf-8")
@@ -185,7 +287,7 @@ def create_release(manifest_path: str | Path, tape_paths: list[str | Path], out_
         "hashes_recorded": all(len(row["sha256"]) == 64 for row in tapes),
         "holdout_separation": split_report["disjoint"],
         "independent_replay": all(row["byte_stable"] and row["provider_calls"] == 0 for row in replay_rows),
-        "educational_review": "PENDING (separate kids-material review)",
+        "educational_review": educational_review,
         "disposition": result["disposition"],
     }, indent=2) + "\n", encoding="utf-8")
     return result
