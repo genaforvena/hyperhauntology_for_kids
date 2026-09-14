@@ -141,6 +141,11 @@ is `BLIND`, not `NULL` and not evidence for or against an absorbing refusal.
 No children or human participants were involved. The tape, hash, holdout report,
 independent replay, and educational materials are in the release bundle.
 
+The newest exploratory tape, `runs/tiny-fleet-v1_zy_h2-9.jsonl`, replays as
+`NOT-ESTABLISHED` across all four families (0/0 graded): the model never applied
+the induction rule, so there was no state to test. This is not an H2 result and
+does not change the released study's `BLIND` status.
+
 ## Licence
 
 CC0 1.0. Public domain, no attribution required.
