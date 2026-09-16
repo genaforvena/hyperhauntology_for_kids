@@ -1,0 +1,1 @@
+{"version":1,"findings":[{"id":"reader-summary-inconsistency","actionable":false,"reason":"The reader-summary inconsistency was corrected in README.md; no additional corrective task remains after replay, test, and diff verification."}]}

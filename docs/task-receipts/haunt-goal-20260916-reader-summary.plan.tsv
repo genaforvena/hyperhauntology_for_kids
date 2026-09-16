@@ -1,0 +1,2 @@
+#tags=audit-followthrough
+haunt	update-readme-establishment-boundary	Update README's reader-facing open-work summary to replace the stale groq next step with the current bounded alternate-induction boundary and cite the four replayable 2026-09-16 NOT-ESTABLISHED tapes; artifact docs/task-receipts/haunt-goal-20260916-reader-summary.md must record exact paths, SHA-256 values, and verification commands, and README must pass git diff --check plus the repository test suite.
