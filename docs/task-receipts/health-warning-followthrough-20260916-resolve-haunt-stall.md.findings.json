@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "stale-completed-haunt-resolver",
+      "actionable": false,
+      "reason": "The health warning referenced a resolver that is now canonically complete with an inspected receipt and successful offline replay; the warning is stale and no corrective work is warranted."
+    }
+  ]
+}
