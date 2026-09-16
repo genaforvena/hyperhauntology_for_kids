@@ -10,10 +10,21 @@ Registration: `protocol/alternate-induction-registration-20260916.json`
 
 Planned tape: `runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl`
 
-Implementation gate: `abcase` is not yet present in `cryptohaunt.rules.RULES`,
-and the runner currently has no establishment-only command path. Implement and
-test that bounded path before any provider call. Then verify Ollama provider
-exclusivity; if it is not true, leave this task pending and retry only on that
-event. If run, the tape must replay offline with exit 0 and its status must be
-reported as `ESTABLISHED` or `NOT-ESTABLISHED`; the latter is not H2 evidence
-and triggers no three-arm persistence collection.
+Implementation gate: `abcase` and the establishment-only command path were
+already present in committed `00bfc7a` (`feat: add bounded establishment-only
+runner`); this was verified with `python3 -m unittest tests.test_establishment
+-v` (exit 0). `ollama ps` showed no resident model before the provider call, so
+the frozen command was run exactly once:
+
+```text
+python3 -m cryptohaunt establishment --model tiny-fleet-v1:latest --provider ollama --rule abcase --seed-word Abacus --turns 4 --reps 1 --temperature 0.7 --seed 19 --out runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl
+```
+
+Result: `ESTABLISHED`. Tape:
+`runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl`,
+SHA-256
+`4767766e82b54482ad5dc0e9e8e2c298f6759e4c4fe95cdc57d1c63a5446a2cc`.
+Offline replay with `python3 -m cryptohaunt replay
+runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl` exited
+0 and returned `ESTABLISHED`. This clears the establishment gate only; no
+three-arm persistence collection or H2 inference is claimed here.
