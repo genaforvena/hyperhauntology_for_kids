@@ -149,10 +149,14 @@ does not change the released study's `BLIND` status.
 Four later one-repetition establishment tapes
 (`runs/tiny-fleet-v1_zy_h2-establishment-1.jsonl` through `-4.jsonl`) reach the
 same gate: `NOT-ESTABLISHED`, with `0/0` graded observations in every family.
-The newest (`-3.jsonl`, SHA-256
+The newest zy diagnostic (`-3.jsonl`, SHA-256
 `93fc6c424a534aa0948c2bb1ab5a101476a197b0165296233ac4390abb813271`) replays
-offline with exit 0. These are induction diagnostics, not H2 evidence; the next
-experiment remains the bounded alternate-induction design in its receipt.
+offline with exit 0. A bounded alternate `abcase` establishment-only run then
+reached `ESTABLISHED`: `runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl`
+(SHA-256 `4767766e82b54482ad5dc0e9e8e2c298f6759e4c4fe95cdc57d1c63a5446a2cc`),
+with offline replay exit 0. This clears the establishment gate only; it is not
+an H2 result. The next step is the predeclared treatment, clean-control, and
+same-shape noise-control persistence experiment with declared power.
 
 ## Licence
 

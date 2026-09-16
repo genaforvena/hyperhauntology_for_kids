@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "goal-status-omitted-newest-alternate-establishment",
+      "actionable": false,
+      "reason": "GOAL.md was stale at audit start but was corrected in the same verified audit artifact; no remaining discrepancy or follow-up task exists."
+    }
+  ]
+}
