@@ -1,4 +1,4 @@
-"""cryptohaunt <run|replay|probes|selftest|gate|pilot|release>"""
+"""cryptohaunt <run|establishment|replay|probes|selftest|gate|pilot|release>"""
 from __future__ import annotations
 
 import argparse
@@ -6,7 +6,7 @@ import json
 import sys
 
 from . import __version__
-from .runner import ConfigError, replay, run
+from .runner import ConfigError, establishment, replay, run
 
 
 def _seed(value: str):
@@ -42,6 +42,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     r.add_argument("-v", "--verbose", action="store_true")
 
+    e = sub.add_parser("establishment", help="run only the induction establishment gate")
+    e.add_argument("--model", required=True)
+    e.add_argument("--provider", default="ollama", choices=["ollama", "groq", "openai"])
+    e.add_argument("--rule", default="abcase")
+    e.add_argument("--seed-word", default="Abacus", dest="seed_word")
+    e.add_argument("--turns", type=int, default=4)
+    e.add_argument("--reps", type=int, default=1)
+    e.add_argument("--temperature", type=float, default=0.7)
+    e.add_argument("--seed", type=_seed, default=19)
+    e.add_argument("--timeout", type=float, default=120.0)
+    e.add_argument("--out", default=None)
+    e.add_argument("--resume", default=None)
+
     k = sub.add_parser("kids", help="hyperhauntology for kids: one run, narrated as it happens")
     k.add_argument("--model", required=True)
     k.add_argument("--provider", default="ollama", choices=["ollama", "groq", "openai"])
@@ -72,6 +85,8 @@ def main(argv=None) -> int:
     try:
         if args.cmd == "run":
             print(run(args))
+        elif args.cmd == "establishment":
+            print(establishment(args))
         elif args.cmd == "kids":
             from .kids import play
 

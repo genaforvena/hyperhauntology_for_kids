@@ -96,6 +96,11 @@ def _o2cyrillic(word: str) -> str:
     return "".join(O2CYRILLIC.get(ch, ch) for ch in word)
 
 
+def _abcase(word: str) -> str:
+    """Alternate lower/upper case, starting with lower case."""
+    return "".join(ch.lower() if i % 2 == 0 else ch.upper() for i, ch in enumerate(word))
+
+
 def _cyrillic_intrinsic(text: str) -> float | None:
     """Share of eligible tokens that MIX Latin letters with Cyrillic homoglyphs.
 
@@ -138,5 +143,14 @@ RULES = {
         ),
         apply=_o2cyrillic,
         intrinsic=_cyrillic_intrinsic,
+    ),
+    "abcase": Rule(
+        name="abcase",
+        instruction=(
+            "Write the word with alternating lower and upper case, starting with lower case. "
+            "Leave every letter in the same position. Reply with the transformed word and nothing else."
+        ),
+        apply=_abcase,
+        intrinsic=_no_intrinsic,
     ),
 }

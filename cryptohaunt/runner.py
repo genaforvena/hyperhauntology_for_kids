@@ -177,6 +177,36 @@ def run(args) -> str:
     return f"{text}\n\ntape: {out_path}"
 
 
+def establishment(args) -> str:
+    """Run only the registered induction gate; never spend persistence probes."""
+    cfg = build_config(args)
+    rule = RULES[args.rule]
+    if args.reps != 1:
+        raise ConfigError("establishment-only accepts exactly one repetition")
+    if args.resume:
+        raise ConfigError("establishment-only does not support --resume")
+    out_path = args.out or os.path.join(
+        "runs", f"{args.model.replace('/', '_')}_{args.rule}_establishment-{int(time.time())}.jsonl"
+    )
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    state = derail(cfg, rule, args.seed_word, args.turns)
+    gate_status = "established" if state.established else state.status
+    with open(out_path, "w", encoding="utf-8", buffering=1) as tape:
+        tape.write(json.dumps({
+            "kind": "header", "version": __version__, "establishment_only": True,
+            "started": _stamp(), "model": args.model, "provider": args.provider,
+            "rule": args.rule, "seed_word": args.seed_word, "turns": args.turns,
+            "reps": 1, "temperature": args.temperature, "sampling_seed": args.seed,
+        }) + "\n")
+        tape.write(json.dumps({
+            "kind": "status", "rep": 1, "status": gate_status,
+            "obeyed": state.obeyed, "first_break_turn": state.first_break_turn,
+        }) + "\n")
+        for call in state.calls:
+            tape.write(json.dumps({"kind": "call", "rep": 1, **call.__dict__}) + "\n")
+    return "ESTABLISHED" if state.established else gate_status.upper()
+
+
 def _load_completed_rows(rows, completed, eligible, arms, families, statuses):
     """Load only complete reps; partial rows remain evidence but not findings."""
     from .detect import Finding
@@ -235,6 +265,12 @@ def replay(path: str) -> str:
     """Re-derive the verdict from a tape, with no network at all."""
     tape = read_tape(path)
     header = tape.header
+    if header.get("establishment_only"):
+        statuses = [row.get("status") for row in tape.rows if row.get("kind") == "status"]
+        if len(statuses) != 1:
+            raise ConfigError("establishment-only tape must contain exactly one status row")
+        status = statuses[0]
+        return "ESTABLISHED" if status == "established" else status.upper()
     families: dict[str, str] = {}
     arms: dict[str, list] = {"switch": [], "control": [], "noise": []}
     for row in tape.rows:
