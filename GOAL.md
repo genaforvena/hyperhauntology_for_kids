@@ -146,6 +146,14 @@ The newest exploratory tape, `runs/tiny-fleet-v1_zy_h2-9.jsonl`, replays as
 the induction rule, so there was no state to test. This is not an H2 result and
 does not change the released study's `BLIND` status.
 
+Four later one-repetition establishment tapes
+(`runs/tiny-fleet-v1_zy_h2-establishment-1.jsonl` through `-4.jsonl`) reach the
+same gate: `NOT-ESTABLISHED`, with `0/0` graded observations in every family.
+The newest (`-3.jsonl`, SHA-256
+`93fc6c424a534aa0948c2bb1ab5a101476a197b0165296233ac4390abb813271`) replays
+offline with exit 0. These are induction diagnostics, not H2 evidence; the next
+experiment remains the bounded alternate-induction design in its receipt.
+
 ## Licence
 
 CC0 1.0. Public domain, no attribution required.

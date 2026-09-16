@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "zy-establishment-summary-matches-replay",
+      "actionable": false,
+      "reason": "All four establishment tapes independently replay as NOT-ESTABLISHED with 0/0 coverage; no H2 finding is justified and the GOAL summary matches the inspected evidence."
+    }
+  ]
+}

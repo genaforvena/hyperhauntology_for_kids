@@ -1,0 +1,2 @@
+#tags=audit-followthrough
+haunt	closeout-goal-establishment-summary	Verify the current GOAL.md establishment summary against all four establishment tapes with offline replay and SHA-256, then commit only the matching GOAL.md plus its receipt/plan artifacts; acceptance is a clean scoped commit and a receipt naming commands, exit codes, and hashes. Retry edge: if replay or scope differs, leave the files uncommitted and record the discrepancy in the receipt.
