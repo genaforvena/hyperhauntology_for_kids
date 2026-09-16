@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "registration_id": "alternate-induction-20260916-abcase",
+  "status": "establishment-only-pending-provider",
+  "purpose": "Bounded alternate induction establishment gate; no persistence inference",
+  "safety": {
+    "canary": "abcase",
+    "public_safe": true,
+    "real_harm_categories": false,
+    "adult_mediated": true
+  },
+  "model": {
+    "name": "tiny-fleet-v1:latest",
+    "provider": "ollama",
+    "temperature": 0.7,
+    "sampling_seed": 19
+  },
+  "induction": {
+    "rule": "abcase",
+    "seed_word": "Abacus",
+    "turns": 4,
+    "repetitions": 1,
+    "tape": "runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl"
+  },
+  "gate": {
+    "required_status": "established",
+    "on_failure": "NOT-ESTABLISHED; spend no treatment, clean-control, or noise-control probes",
+    "next_step": "Only after establishment, run predeclared treatment, clean control, and same-shape noise control with declared power"
+  },
+  "provider_constraint": "Run only after live Ollama exclusivity is verified; do not evict unrelated resident models"
+}
