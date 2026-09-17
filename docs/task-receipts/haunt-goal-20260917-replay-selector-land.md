@@ -25,5 +25,9 @@ files before landing.
 
 ## Landing
 
-The commit hash and post-commit verification are appended after the focused
-commit is created.
+Focused commit: `98d5bfc` (`land offline replay selector regression`).
+
+Post-commit verification was rerun successfully: `git show --check --oneline
+98d5bfc`, the 3-test selector unittest, and the real-tape probe selector all
+exited 0. `git status --short` confirms unrelated dirty files remain outside
+this focused commit.
