@@ -1,0 +1,1 @@
+haunt	offline-replay-selector-regression	0	Run the replay-selector regression suite offline, inspect the selector implementation and test artifact, and record the exact command, exit status, and observed coverage/verdict behavior in an owner-authored receipt; no live model campaign.

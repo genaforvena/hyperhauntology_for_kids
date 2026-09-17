@@ -68,6 +68,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     q = sub.add_parser("replay", help="re-derive a verdict from a tape, offline")
     q.add_argument("tape")
+    selectors = q.add_mutually_exclusive_group()
+    selectors.add_argument("--family", help="replay only one probe family, e.g. identity")
+    selectors.add_argument("--probe", help="replay only one probe key, e.g. identity.human")
 
     sub.add_parser("probes", help="print the shipped probe set")
     sub.add_parser("selftest", help="run the detectors against their fixtures, no network")
@@ -104,7 +107,7 @@ def main(argv=None) -> int:
                 args.probe_key,
             )
         elif args.cmd == "replay":
-            print(replay(args.tape))
+            print(replay(args.tape, family=args.family, probe=args.probe))
         elif args.cmd == "probes":
             from .probes import DEFAULT_PROBES
 

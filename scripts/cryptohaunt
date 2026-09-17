@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""Repository-local executable entrypoint for the cryptohaunt CLI."""
+from cryptohaunt.cli import main
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

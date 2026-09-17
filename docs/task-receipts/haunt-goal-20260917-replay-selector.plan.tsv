@@ -1,0 +1,1 @@
+haunt	implement-identity-replay-selector	85	Implement executable scripts/cryptohaunt plus cryptohaunt/runner.py and cryptohaunt/cli.py: add provider-free replay --family/--probe selectors for H2 identity analysis; preserve default all-family replay; verify focused/full offline tests and gate with zero provider calls.

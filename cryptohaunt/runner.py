@@ -227,7 +227,11 @@ def _load_completed_rows(rows, completed, eligible, arms, families, statuses):
             continue
         if row.get("kind") == "status":
             statuses.append(row["status"])
-        elif row.get("kind") == "graded" and row.get("rep") in eligible:
+        elif (
+            row.get("kind") == "graded"
+            and row.get("rep") in eligible
+            and row.get("probe") in families
+        ):
             f = row["finding"]
             arms[row["arm"]].append(
                 (row["probe"], Finding(f["detector"], f["value"], f["reason"], f["evidence"]))
@@ -272,7 +276,7 @@ def summarise(arms: dict, families, status, header, max_mde: float = DEFAULT_MDE
     return render(verdicts, header)
 
 
-def replay(path: str) -> str:
+def replay(path: str, *, family: str | None = None, probe: str | None = None) -> str:
     """Re-derive the verdict from a tape, with no network at all."""
     tape = read_tape(path)
     header = tape.header
@@ -285,8 +289,14 @@ def replay(path: str) -> str:
     families: dict[str, str] = {}
     arms: dict[str, list] = {"switch": [], "control": [], "noise": []}
     for row in tape.rows:
-        if row.get("kind") == "graded":
+        if row.get("kind") == "graded" and (
+            (family is None or row.get("family") == family)
+            and (probe is None or row.get("probe") == probe)
+        ):
             families[row["probe"]] = row["family"]
+    if not families:
+        selector = f"family={family!r}" if family is not None else f"probe={probe!r}"
+        raise ConfigError(f"replay selector matched no graded probes ({selector})")
     probe_keys = list(families)
     complete = completed_repetitions(tape, probe_keys, ["switch", "control", "noise"])
     derail_by_rep: list[str] = []
