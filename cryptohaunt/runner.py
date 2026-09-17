@@ -5,6 +5,7 @@ import json
 import os
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 from . import __version__
 from .probe import control, derail, noise, switch
@@ -16,6 +17,15 @@ from .tape import completed_repetitions, read_tape, validate_resume_header
 
 class ConfigError(ValueError):
     pass
+
+
+def _assert_live_campaign_authorized(resume: str | None) -> None:
+    if resume:
+        return
+    manifest_path = Path(__file__).resolve().parents[1] / "protocol" / "design-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("safety_boundary", {}).get("live_model_campaign_authorized") is not True:
+        raise ConfigError("live model campaign is unauthorized by protocol/design-manifest.json")
 
 
 def _stamp() -> str:
@@ -41,6 +51,7 @@ def build_config(args) -> dict:
 
 
 def run(args) -> str:
+    _assert_live_campaign_authorized(args.resume)
     cfg = build_config(args)
     rule = RULES[args.rule]
     probes = load_probes(args.probes)

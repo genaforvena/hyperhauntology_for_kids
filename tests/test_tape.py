@@ -75,6 +75,23 @@ class TestTapeCompletion(unittest.TestCase):
 
 
 class TestResumeValidation(unittest.TestCase):
+    def test_live_run_is_refused_by_offline_only_manifest_before_provider_call(self):
+        from cryptohaunt.runner import run
+
+        path = Path(self.id().replace(".", "_") + ".jsonl")
+        args = SimpleNamespace(
+            model="m", provider="groq", rule="zy", seed_word="mozerov", turns=2,
+            reps=1, temperature=0.7, seed=7, timeout=1.0, probes=None,
+            out=str(path), resume=None, max_mde=0.30, verbose=False,
+        )
+        try:
+            with patch("cryptohaunt.runner.derail", side_effect=AssertionError("provider called")):
+                with self.assertRaisesRegex(ConfigError, "live model campaign is unauthorized"):
+                    run(args)
+            self.assertFalse(path.exists())
+        finally:
+            path.unlink(missing_ok=True)
+
     def test_resume_rejects_different_rule(self):
         from cryptohaunt.tape import validate_resume_header
 
