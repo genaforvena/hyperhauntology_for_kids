@@ -166,7 +166,8 @@ insufficient. This is not an H2 finding. The live gate was restored to
 `live_model_campaign_authorized=false` and `ollama ps` is empty. Any rerun
 requires a fresh explicit operator authorization, a temporary gate change, and
 fresh exclusive-provider evidence; see the dated receipt for the exact
-commands and hash.
+commands and hash. The latest tape-backed state capture is
+[`docs/task-receipts/haunt-goal-20260918-current-state-receipt.md`](docs/task-receipts/haunt-goal-20260918-current-state-receipt.md).
 
 ## Licence
 
