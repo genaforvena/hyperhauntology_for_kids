@@ -1,0 +1,1 @@
+haunt	identity-coverage-remediation	10	Write an offline receipt specifying the smallest identity-canary coverage remediation, exact tape/hash evidence, acceptance fixtures, fail-closed 80% pre-run stop rule, and provider-free replay verification; do not call a provider or change authorization.
