@@ -1,0 +1,1 @@
+haunt	pane-state-reverification	Freshly replay the current abcase persistence tape offline, verify the live authorization boundary remains closed, and record the observed pane/result state in a receipt; acceptance requires replay exit 0, unchanged tape hash, no provider call, and a fresh pane:haunt observation.
