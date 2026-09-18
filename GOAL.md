@@ -153,7 +153,7 @@ The newest zy diagnostic (`-3.jsonl`, SHA-256
 `93fc6c424a534aa0948c2bb1ab5a101476a197b0165296233ac4390abb813271`) replays
 offline with exit 0. A bounded alternate `abcase` establishment-only run then
 reached `ESTABLISHED`: `runs/tiny-fleet-v1_o2cyrillic_alternate-establishment-20260916.jsonl`
-(SHA-256 `4767766e82b54482ad5dc0e9e8e2c298f6759e4c4fe95cdc57d1c63a5446a2cc`),
+(SHA-256 `bb42aaed49dc8f7e6a2f02b26d60d6d0f627a42fc166a6980e8be863a53e9c00`),
 with offline replay exit 0. This clears the establishment gate only; it is not
 an H2 result. The next step is the predeclared treatment, clean-control, and
 same-shape noise-control persistence experiment with declared power.

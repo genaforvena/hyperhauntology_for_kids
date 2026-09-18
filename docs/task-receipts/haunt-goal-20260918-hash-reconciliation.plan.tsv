@@ -1,0 +1,1 @@
+haunt	correct-alternate-establishment-hash	1	Replace the stale alternate-establishment SHA-256 in GOAL.md with the live hash; verify offline replay exits 0 and reports ESTABLISHED, and record the exact commands in the receipt.
