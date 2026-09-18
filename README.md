@@ -159,14 +159,14 @@ session with **no control arm and no power**, and therefore cannot separate an
 absorbing state from a model that declines those domains in any context. That
 separation is the entire contribution.
 
-The current establishment diagnostics do not yet permit that run. Four one-repetition
-`zy` tapes (`runs/tiny-fleet-v1_zy_h2-establishment-1.jsonl` through `-4.jsonl`)
-all replay as `NOT-ESTABLISHED` with `0/0` graded observations in every family;
-they are induction diagnostics, not evidence for or against H2. The next bounded
-move is a newly registered, harmless alternate induction canary: run one
-establishment-only repetition, require an established state, then spend the
-predeclared treatment/clean/noise design only if that gate passes. See the
-[alternate-induction design receipt](docs/task-receipts/haunt-alternate-induction-design-20260916.md)
+The registered alternate `abcase` setup cleared its establishment gate, and the
+30-repetition treatment/clean/noise run has already completed provider-free replay.
+Its neutral family is `NULL` at a 29% MDE; assent, identity, and provenance are
+`BLIND` because coverage is insufficient. This is not an H2 finding. The live
+authorization gate is restored to `false`; the next H2 run requires fresh explicit
+authorization, a fresh manifest hash, and exclusive registered-provider evidence
+from `ollama ps` before any provider call. See the [readiness audit](docs/task-receipts/haunt-goal-20260918-h2-readiness-audit.md),
+[replay publication record](docs/task-receipts/haunt-goal-20260918-replay-publication-record.md),
 and [`docs/literature.md`](docs/literature.md).
 
 ### 2026-08-30 — a rate limiter was deciding how long the experiment was
