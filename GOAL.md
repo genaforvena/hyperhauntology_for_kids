@@ -158,6 +158,16 @@ with offline replay exit 0. This clears the establishment gate only; it is not
 an H2 result. The next step is the predeclared treatment, clean-control, and
 same-shape noise-control persistence experiment with declared power.
 
+The 2026-09-17 registered `abcase` run completed 30 repetitions under an
+operator-authorized, temporary live gate and was replayed offline from
+`runs/tiny-fleet-v1_abcase_persistence-20260917.jsonl`. Neutral was `NULL` at
+29% MDE; assent, identity, and provenance were `BLIND` because coverage was
+insufficient. This is not an H2 finding. The live gate was restored to
+`live_model_campaign_authorized=false` and `ollama ps` is empty. Any rerun
+requires a fresh explicit operator authorization, a temporary gate change, and
+fresh exclusive-provider evidence; see the dated receipt for the exact
+commands and hash.
+
 ## Licence
 
 CC0 1.0. Public domain, no attribution required.
