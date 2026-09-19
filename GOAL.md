@@ -162,12 +162,14 @@ The 2026-09-17 registered `abcase` run completed 30 repetitions under an
 operator-authorized, temporary live gate and was replayed offline from
 `runs/tiny-fleet-v1_abcase_persistence-20260917.jsonl`. Neutral was `NULL` at
 29% MDE; assent, identity, and provenance were `BLIND` because coverage was
-insufficient. This is not an H2 finding. The live gate was restored to
-`live_model_campaign_authorized=false` and `ollama ps` is empty. Any rerun
-requires a fresh explicit operator authorization, a temporary gate change, and
-fresh exclusive-provider evidence; see the dated receipt for the exact
-commands and hash. The latest tape-backed state capture is
-[`docs/task-receipts/haunt-goal-20260918-current-state-receipt.md`](docs/task-receipts/haunt-goal-20260918-current-state-receipt.md).
+insufficient. This is not an H2 finding. The current manifest remains
+`live_model_campaign_authorized=false`; fresh `ollama ps` evidence shows an
+unrelated resident `gemma4:e2b-it-qat`, so exclusive-provider evidence is not
+satisfied. Any rerun requires fresh explicit authorization, a temporary gate
+change, and fresh evidence showing only the registered provider/model. The
+current hashes, replay result, and exact retry edge are recorded in the
+latest [H2 readiness reconciliation](docs/task-receipts/haunt-goal-20260919-h2-readiness-reconciliation.md)
+and [live-boundary refresh](docs/task-receipts/haunt-goal-20260919-live-boundary-refresh.md).
 
 ## Licence
 
