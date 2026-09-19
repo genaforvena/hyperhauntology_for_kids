@@ -1,9 +1,10 @@
-"""cryptohaunt <run|establishment|replay|probes|selftest|gate|pilot|release>"""
+"""cryptohaunt <run|establishment|replay|probes|selftest|gate|pilot|preflight|release>"""
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import __version__
 from .runner import ConfigError, establishment, replay, run
@@ -76,6 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("selftest", help="run the detectors against their fixtures, no network")
     sub.add_parser("gate", help="lint lessons and replay synthetic fixtures, no network")
     sub.add_parser("pilot", help="build and replay the provider-free pilot artifacts")
+    f = sub.add_parser("preflight", help="assess the registered H2 retry edge without a provider")
+    f.add_argument("--manifest", default="protocol/design-manifest.json")
     rel = sub.add_parser("release", help="verify and build an adult-only reproducibility bundle")
     rel.add_argument("--manifest", required=True)
     rel.add_argument("--out", required=True, dest="release_out")
@@ -125,6 +128,9 @@ def main(argv=None) -> int:
         elif args.cmd == "pilot":
             from .offline_pilot import run as run_pilot
             print(json.dumps(run_pilot(), indent=2))
+        elif args.cmd == "preflight":
+            from .preflight import run as run_preflight
+            return run_preflight(Path(args.manifest))
         elif args.cmd == "release":
             from .release import create_release
             print(json.dumps(create_release(args.manifest, args.tapes, args.release_out), indent=2))
