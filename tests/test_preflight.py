@@ -33,6 +33,21 @@ class TestPreflight(unittest.TestCase):
         self.assertFalse(result["ready"])
         self.assertFalse(result["static_checks_pass"])
 
+    def test_registered_artifact_hash_mismatch_is_named(self):
+        manifest = json.loads((ROOT / "protocol/design-manifest.json").read_text())
+        integrity = ROOT / "protocol/preflight-integrity.json"
+        original = integrity.read_text()
+        try:
+            tampered = json.loads(original)
+            tampered["artifacts"]["scripts/cryptohaunt"] = "0" * 64
+            integrity.write_text(json.dumps(tampered))
+            result = assess(ROOT, manifest)
+        finally:
+            integrity.write_text(original)
+
+        self.assertFalse(result["static_checks_pass"])
+        self.assertTrue(any("hash mismatch: scripts/cryptohaunt" in error for error in result["errors"]))
+
 
 if __name__ == "__main__":
     unittest.main()

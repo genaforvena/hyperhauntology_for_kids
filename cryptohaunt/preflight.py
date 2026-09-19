@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 from .gate import load_manifest, validate_manifest
@@ -17,6 +18,21 @@ def assess(root: Path, manifest: dict) -> dict:
     ]
     missing = [rel for rel in required if not (root / rel).is_file()]
     errors.extend(f"missing registered artifact: {rel}" for rel in missing)
+    integrity_path = root / "protocol/preflight-integrity.json"
+    if not integrity_path.is_file():
+        errors.append("missing registered artifact: protocol/preflight-integrity.json")
+        expected_hashes = {}
+    else:
+        expected_hashes = json.loads(integrity_path.read_text()).get("artifacts", {})
+        for rel in required:
+            expected = expected_hashes.get(rel)
+            if expected is None:
+                errors.append(f"missing declared hash: {rel}")
+                continue
+            if (root / rel).is_file():
+                observed = hashlib.sha256((root / rel).read_bytes()).hexdigest()
+                if observed != expected:
+                    errors.append(f"hash mismatch: {rel} expected={expected} observed={observed}")
     authorization_open = manifest.get("safety_boundary", {}).get("live_model_campaign_authorized") is True
     if authorization_open:
         return {

@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "artifacts": {
+    "protocol/design-manifest.json": "1558b4a8a879da6c3aa0f15e4b0fad4c78a553d10833f0a51c9935d6c9cdda8b",
+    "protocol/canary-registry.json": "1e57521b8d3b01e83f42311b231556cff8286d58a71612cad56bf0de9fc62d5f",
+    "scripts/cryptohaunt": "627891a5b2f3b69e8e8c3b56de2798ab2b76ec63e904b11449776b53f0588761"
+  }
+}
